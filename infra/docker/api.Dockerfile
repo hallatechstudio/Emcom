@@ -4,7 +4,7 @@
 #   docker run emcom-api node dist/worker.js   -> background worker
 #   docker run emcom-api npx prisma migrate deploy
 FROM node:20.18-bookworm-slim AS build
-RUN corepack enable && apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+RUN npm install -g pnpm@9.15.0 && apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /repo
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc turbo.json ./
 COPY packages ./packages

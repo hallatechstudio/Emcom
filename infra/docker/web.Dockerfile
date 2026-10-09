@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 FROM node:20.18-bookworm-slim AS build
-RUN corepack enable
+RUN npm install -g pnpm@9.15.0
 WORKDIR /repo
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000
 ARG NEXT_PUBLIC_MEDIA_ORIGIN=http://localhost:9000
