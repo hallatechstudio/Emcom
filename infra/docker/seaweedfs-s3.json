@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "emcom-dev",
+      "credentials": [{ "accessKey": "emcom-s3-dev", "secretKey": "emcom-s3-dev-secret" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

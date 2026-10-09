@@ -1,0 +1,5 @@
+{
+  "extends": "@emcom/config/tsconfig.node.json",
+  "compilerOptions": { "outDir": "dist", "rootDir": "src", "types": ["node"] },
+  "include": ["src"]
+}

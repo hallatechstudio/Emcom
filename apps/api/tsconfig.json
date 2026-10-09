@@ -1,0 +1,15 @@
+{
+  "extends": "@emcom/config/tsconfig.node.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "isolatedModules": false,
+    "declaration": false,
+    "strictPropertyInitialization": false,
+    "noUncheckedIndexedAccess": false,
+    "types": ["node", "jest"]
+  },
+  "include": ["src", "test", "prisma", "scripts"]
+}

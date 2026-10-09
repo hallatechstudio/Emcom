@@ -1,0 +1,10 @@
+{
+  "name": "@emcom/worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Background worker process. Shares the NestJS codebase in apps/api (separate entrypoint: apps/api/src/worker.ts).",
+  "scripts": {
+    "dev": "pnpm --filter @emcom/api dev:worker",
+    "start": "node ../api/dist/worker.js"
+  }
+}

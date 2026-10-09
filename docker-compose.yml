@@ -1,0 +1,79 @@
+# Local development infrastructure for EMCOM.
+# Ports are bound to 127.0.0.1 only; nothing here is meant to be internet-facing.
+name: emcom
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: emcom
+      POSTGRES_PASSWORD: emcom_dev_password
+      POSTGRES_DB: emcom
+    ports: ["127.0.0.1:5433:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/docker/postgres-init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U emcom -d emcom"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports: ["127.0.0.1:6380:6379"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # S3-compatible object storage (SeaweedFS). The API creates the bucket on startup in dev.
+  s3:
+    image: chrislusf/seaweedfs:3.80
+    command: ["server", "-dir=/data", "-s3", "-s3.port=8333", "-s3.config=/etc/seaweedfs/s3.json", "-volume.max=100", "-master.volumeSizeLimitMB=64", "-master.volumePreallocate=false"]
+    ports: ["127.0.0.1:9000:8333"]
+    volumes:
+      - s3data:/data
+      - ./infra/docker/seaweedfs-s3.json:/etc/seaweedfs/s3.json:ro
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ["127.0.0.1:1025:1025", "127.0.0.1:8025:8025"]
+
+  # Optional: run the API/worker in containers instead of on the host.
+  # `docker compose --profile app up --build`
+  api:
+    profiles: ["app"]
+    build: { context: ., dockerfile: infra/docker/api.Dockerfile }
+    env_file: apps/api/.env
+    environment:
+      DATABASE_URL: postgresql://emcom:emcom_dev_password@postgres:5432/emcom?schema=public
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT: http://s3:8333
+      SMTP_HOST: mailpit
+    ports: ["127.0.0.1:4000:4000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  worker:
+    profiles: ["app"]
+    build: { context: ., dockerfile: infra/docker/api.Dockerfile }
+    command: ["node", "apps/api/dist/worker.js"]
+    env_file: apps/api/.env
+    environment:
+      DATABASE_URL: postgresql://emcom:emcom_dev_password@postgres:5432/emcom?schema=public
+      REDIS_URL: redis://redis:6379/0
+      S3_ENDPOINT: http://s3:8333
+      SMTP_HOST: mailpit
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+volumes:
+  pgdata:
+  redisdata:
+  s3data:

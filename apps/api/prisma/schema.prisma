@@ -1,0 +1,546 @@
+// EMCOM data model. See docs/data-model.md for invariants and rationale.
+// Every community-scoped table carries communityId so isolation can be enforced
+// directly in queries (no reliance on joins being remembered).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum OtpPurpose {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+enum CommunityType {
+  ESTATE
+  NEIGHBORHOOD
+  CHURCH
+  SCHOOL
+  WORKPLACE
+  HOTEL
+  APARTMENT_COMPLEX
+  INDUSTRIAL_FACILITY
+  OTHER
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum MembershipStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+  REMOVED
+  LEFT
+}
+
+enum EmergencyPathway {
+  NORMAL
+  CRITICAL
+}
+
+enum EmergencyStatus {
+  PENDING
+  ACTIVE
+  DISMISSED
+  RESOLVED
+}
+
+enum EmergencyCategory {
+  FIRE
+  SECURITY_THREAT
+  MEDICAL_EMERGENCY
+  ELECTRICAL_EMERGENCY
+  GAS_LEAK
+  FLOOD
+  OTHER
+}
+
+enum EmergencyEventType {
+  REPORTED
+  CRITICAL_ALERT_TRIGGERED
+  ADDITIONAL_TRIGGER
+  CONFIRMED
+  DISMISSED
+  COMMUNITY_ALERTED
+  UPDATE_SENT
+  RESOLVED
+}
+
+enum MediaStatus {
+  PENDING_UPLOAD
+  ATTACHED
+}
+
+enum NotificationType {
+  JOIN_REQUEST
+  MEMBERSHIP_APPROVED
+  MEMBERSHIP_REJECTED
+  EMERGENCY_REPORT_RECEIVED
+  EMERGENCY_CONFIRMED
+  EMERGENCY_BROADCAST
+  CRITICAL_ALERT
+  EMERGENCY_UPDATE
+  EMERGENCY_RESOLVED
+  REPORT_DISMISSED
+}
+
+enum NotificationPriority {
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum DeliveryStatus {
+  QUEUED
+  PROVIDER_ACCEPTED
+  FAILED
+  INVALID_TOKEN
+  SKIPPED
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+enum PushProviderName {
+  MOCK
+  EXPO
+  FCM
+}
+
+enum OutboxStatus {
+  PENDING
+  DISPATCHED
+  FAILED
+}
+
+model User {
+  id              String     @id @default(uuid()) @db.Uuid
+  fullName        String
+  email           String     @unique
+  phone           String
+  passwordHash    String
+  status          UserStatus @default(ACTIVE)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  memberships        CommunityMembership[] @relation("MembershipUser")
+  decidedMemberships CommunityMembership[] @relation("MembershipDecider")
+  refreshTokens      RefreshToken[]
+  otpCodes           OtpCode[]
+  createdCommunities Community[]           @relation("CommunityCreator")
+  reportedEmergencies Emergency[]          @relation("EmergencyReporter")
+  emergencyUpdates   EmergencyUpdate[]
+  acknowledgments    AlertAcknowledgment[]
+  deviceTokens       DeviceToken[]
+  notifications      Notification[]
+  auditLogs          AuditLog[]
+  emergencyEvents    EmergencyEvent[]
+  media              EmergencyMedia[]
+
+  @@map("users")
+}
+
+model OtpCode {
+  id         String     @id @default(uuid()) @db.Uuid
+  userId     String     @db.Uuid
+  purpose    OtpPurpose
+  codeHash   String
+  attempts   Int        @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose, createdAt])
+  @@map("otp_codes")
+}
+
+/// Opaque refresh tokens (stored hashed). Rotated on every use; reuse of a rotated token revokes its family.
+model RefreshToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  familyId     String    @db.Uuid
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  revokedReason String?
+  replacedById String?   @db.Uuid
+  userAgent    String?
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+model Community {
+  id                  String        @id @default(uuid()) @db.Uuid
+  name                String
+  type                CommunityType
+  location            String
+  description         String        @default("")
+  whatsappUrl         String?
+  /// Current invitation code (PRD §8). Unique across all communities. Rotation never touches memberships.
+  inviteCode          String        @unique
+  inviteCodeRotatedAt DateTime      @default(now())
+  createdById         String        @db.Uuid
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  createdBy           User                          @relation("CommunityCreator", fields: [createdById], references: [id])
+  identificationField CommunityIdentificationField?
+  memberships         CommunityMembership[]
+  codeHistory         CommunityCodeHistory[]
+  emergencies         Emergency[]
+  alerts              EmergencyAlert[]
+  updates             EmergencyUpdate[]
+  events              EmergencyEvent[]
+  acknowledgments     AlertAcknowledgment[]
+  recipients          AlertRecipient[]
+  notifications       Notification[]
+  media               EmergencyMedia[]
+  auditLogs           AuditLog[]
+
+  @@map("communities")
+}
+
+/// Superseded invitation codes, kept so rotations are auditable and old codes can never be re-issued.
+model CommunityCodeHistory {
+  id          String    @id @default(uuid()) @db.Uuid
+  communityId String    @db.Uuid
+  code        String    @unique
+  retiredAt   DateTime  @default(now())
+  retiredById String?   @db.Uuid
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([communityId])
+  @@map("community_code_history")
+}
+
+/// PRD §7: one configurable identification field per community (e.g. "Block / Apartment").
+model CommunityIdentificationField {
+  id          String    @id @default(uuid()) @db.Uuid
+  communityId String    @unique @db.Uuid
+  label       String
+  required    Boolean   @default(false)
+  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime  @default(now())
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@map("community_identification_fields")
+}
+
+model CommunityMembership {
+  id                  String           @id @default(uuid()) @db.Uuid
+  communityId         String           @db.Uuid
+  userId              String           @db.Uuid
+  role                MembershipRole   @default(MEMBER)
+  status              MembershipStatus @default(PENDING)
+  identificationValue String?
+  requestedAt         DateTime         @default(now())
+  decidedAt           DateTime?
+  decidedById         String?          @db.Uuid
+  approvedAt          DateTime?
+  suspendedAt         DateTime?
+  removedAt           DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  community       Community             @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user            User                  @relation("MembershipUser", fields: [userId], references: [id], onDelete: Cascade)
+  decidedBy       User?                 @relation("MembershipDecider", fields: [decidedById], references: [id])
+  acknowledgments AlertAcknowledgment[]
+  recipients      AlertRecipient[]
+
+  @@unique([communityId, userId])
+  @@unique([id, communityId])
+  @@index([communityId, status, role])
+  @@index([userId, status])
+  @@map("community_memberships")
+}
+
+model Emergency {
+  id                  String             @id @default(uuid()) @db.Uuid
+  communityId         String             @db.Uuid
+  pathway             EmergencyPathway
+  status              EmergencyStatus
+  category            EmergencyCategory?
+  location            String?
+  description         String?
+  instructions        String?
+  reporterId          String             @db.Uuid
+  confirmedAt         DateTime?
+  confirmedById       String?            @db.Uuid
+  dismissedAt         DateTime?
+  dismissedById       String?            @db.Uuid
+  dismissalReason     String?
+  resolvedAt          DateTime?
+  resolvedById        String?            @db.Uuid
+  resolutionMessage   String?
+  additionalTriggerCount Int             @default(0)
+  /// Next timeline sequence number (monotonic per emergency; used for realtime ordering).
+  eventSeq            Int                @default(0)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  community Community         @relation(fields: [communityId], references: [id])
+  reporter  User              @relation("EmergencyReporter", fields: [reporterId], references: [id])
+  alert     EmergencyAlert?
+  updates   EmergencyUpdate[]
+  events    EmergencyEvent[]
+  media     EmergencyMedia[]
+
+  @@unique([id, communityId])
+  @@index([communityId, status, createdAt])
+  @@index([communityId, pathway, createdAt])
+  @@index([reporterId, createdAt])
+  @@map("emergencies")
+}
+
+/// The community broadcast for an emergency. emergencyId is UNIQUE: an emergency can never be broadcast twice.
+model EmergencyAlert {
+  id             String           @id @default(uuid()) @db.Uuid
+  emergencyId    String           @unique @db.Uuid
+  communityId    String           @db.Uuid
+  pathway        EmergencyPathway
+  triggeredById  String           @db.Uuid
+  recipientCount Int
+  broadcastAt    DateTime         @default(now())
+
+  emergency       Emergency             @relation(fields: [emergencyId, communityId], references: [id, communityId])
+  community       Community             @relation(fields: [communityId], references: [id])
+  recipients      AlertRecipient[]
+  acknowledgments AlertAcknowledgment[]
+
+  @@unique([id, communityId])
+  @@unique([emergencyId, communityId])
+  @@index([communityId, broadcastAt])
+  @@map("emergency_alerts")
+}
+
+/// Recipient baseline: approved members at broadcast time (+ members approved later who open/ack the alert).
+model AlertRecipient {
+  id                  String              @id @default(uuid()) @db.Uuid
+  alertId             String              @db.Uuid
+  communityId         String              @db.Uuid
+  membershipId        String              @db.Uuid
+  userId              String              @db.Uuid
+  addedAfterBroadcast Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  alert               EmergencyAlert      @relation(fields: [alertId, communityId], references: [id, communityId])
+  community           Community           @relation(fields: [communityId], references: [id])
+  membership          CommunityMembership @relation(fields: [membershipId, communityId], references: [id, communityId])
+
+  @@unique([alertId, userId])
+  @@index([communityId])
+  @@map("alert_recipients")
+}
+
+model AlertAcknowledgment {
+  id             String              @id @default(uuid()) @db.Uuid
+  alertId        String              @db.Uuid
+  communityId    String              @db.Uuid
+  userId         String              @db.Uuid
+  membershipId   String              @db.Uuid
+  acknowledgedAt DateTime            @default(now())
+  alert          EmergencyAlert      @relation(fields: [alertId, communityId], references: [id, communityId])
+  community      Community           @relation(fields: [communityId], references: [id])
+  user           User                @relation(fields: [userId], references: [id])
+  membership     CommunityMembership @relation(fields: [membershipId, communityId], references: [id, communityId])
+
+  @@unique([alertId, userId])
+  @@index([communityId])
+  @@map("alert_acknowledgments")
+}
+
+model EmergencyUpdate {
+  id             String    @id @default(uuid()) @db.Uuid
+  emergencyId    String    @db.Uuid
+  communityId    String    @db.Uuid
+  authorId       String    @db.Uuid
+  message        String
+  createdAt      DateTime  @default(now())
+  emergency      Emergency @relation(fields: [emergencyId, communityId], references: [id, communityId])
+  community      Community @relation(fields: [communityId], references: [id])
+  author         User      @relation(fields: [authorId], references: [id])
+
+  @@index([emergencyId, createdAt])
+  @@map("emergency_updates")
+}
+
+/// Append-only timeline (PRD §20). Updates/deletes are blocked by a database trigger.
+model EmergencyEvent {
+  id          String             @id @default(uuid()) @db.Uuid
+  emergencyId String             @db.Uuid
+  communityId String             @db.Uuid
+  seq         Int
+  type        EmergencyEventType
+  actorId     String?            @db.Uuid
+  message     String?
+  createdAt   DateTime           @default(now())
+  emergency   Emergency          @relation(fields: [emergencyId, communityId], references: [id, communityId])
+  community   Community          @relation(fields: [communityId], references: [id])
+  actor       User?              @relation(fields: [actorId], references: [id])
+
+  @@unique([emergencyId, seq])
+  @@map("emergency_events")
+}
+
+model EmergencyMedia {
+  id          String      @id @default(uuid()) @db.Uuid
+  communityId String      @db.Uuid
+  emergencyId String?     @db.Uuid
+  uploaderId  String      @db.Uuid
+  objectKey   String      @unique
+  contentType String
+  sizeBytes   Int
+  status      MediaStatus @default(PENDING_UPLOAD)
+  createdAt   DateTime    @default(now())
+  community   Community   @relation(fields: [communityId], references: [id])
+  emergency   Emergency?  @relation(fields: [emergencyId], references: [id])
+  uploader    User        @relation(fields: [uploaderId], references: [id])
+
+  @@index([emergencyId])
+  @@index([uploaderId, status])
+  @@map("emergency_media")
+}
+
+model DeviceToken {
+  id            String           @id @default(uuid()) @db.Uuid
+  userId        String           @db.Uuid
+  token         String           @unique
+  platform      DevicePlatform
+  provider      PushProviderName
+  appVersion    String?
+  lastSeenAt    DateTime         @default(now())
+  invalidatedAt DateTime?
+  invalidReason String?
+  createdAt     DateTime         @default(now())
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries    NotificationDelivery[]
+
+  @@index([userId, invalidatedAt])
+  @@map("device_tokens")
+}
+
+/// Persistent in-app inbox — the source of truth for what a user was told.
+model Notification {
+  id          String               @id @default(uuid()) @db.Uuid
+  userId      String               @db.Uuid
+  communityId String?              @db.Uuid
+  emergencyId String?              @db.Uuid
+  type        NotificationType
+  priority    NotificationPriority @default(NORMAL)
+  title       String
+  body        String
+  /// e.g. "EMERGENCY_BROADCAST:<alertId>" — makes fan-out idempotent per user.
+  dedupeKey   String
+  readAt      DateTime?
+  createdAt   DateTime             @default(now())
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community   Community?           @relation(fields: [communityId], references: [id])
+  deliveries  NotificationDelivery[]
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, createdAt])
+  @@index([communityId, createdAt])
+  @@map("notifications")
+}
+
+/// One push attempt series per (notification, device). PROVIDER_ACCEPTED ≠ delivered to the device.
+model NotificationDelivery {
+  id                String           @id @default(uuid()) @db.Uuid
+  notificationId    String           @db.Uuid
+  deviceTokenId     String           @db.Uuid
+  provider          PushProviderName
+  status            DeliveryStatus   @default(QUEUED)
+  attempts          Int              @default(0)
+  providerMessageId String?
+  lastError         String?
+  queuedAt          DateTime         @default(now())
+  acceptedAt        DateTime?
+  failedAt          DateTime?
+  updatedAt         DateTime         @updatedAt
+  notification      Notification     @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  deviceToken       DeviceToken      @relation(fields: [deviceTokenId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, deviceTokenId])
+  @@index([status, queuedAt])
+  @@map("notification_deliveries")
+}
+
+/// Transactional outbox: written in the same transaction as the state change it describes.
+model OutboxEvent {
+  id           String       @id @default(uuid()) @db.Uuid
+  type         String
+  communityId  String?      @db.Uuid
+  aggregateId  String
+  payload      Json
+  dedupeKey    String       @unique
+  status       OutboxStatus @default(PENDING)
+  attempts     Int          @default(0)
+  availableAt  DateTime     @default(now())
+  dispatchedAt DateTime?
+  lastError    String?
+  createdAt    DateTime     @default(now())
+
+  @@index([status, availableAt])
+  @@map("outbox_events")
+}
+
+/// Immutable audit trail. Updates/deletes are blocked by a database trigger.
+model AuditLog {
+  id          String     @id @default(uuid()) @db.Uuid
+  communityId String?    @db.Uuid
+  actorId     String?    @db.Uuid
+  action      String
+  entityType  String
+  entityId    String?
+  metadata    Json?
+  ip          String?
+  userAgent   String?
+  requestId   String?
+  createdAt   DateTime   @default(now())
+  community   Community? @relation(fields: [communityId], references: [id])
+  actor       User?      @relation(fields: [actorId], references: [id])
+
+  @@index([communityId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
+
+/// Replay protection for retry-prone commands (report, critical alert, update). Keyed per user.
+model IdempotencyRecord {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  key        String
+  scope      String
+  resourceId String
+  coalesced  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, key])
+  @@index([createdAt])
+  @@map("idempotency_records")
+}
