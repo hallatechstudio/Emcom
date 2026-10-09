@@ -1,0 +1,2208 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/v1/communities/{communityId}/admin/overview": {
+      "get": {
+        "operationId": "AdminController_overview_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "required": false,
+            "in": "query",
+            "description": "Start of the viewer's local day (ISO). Defaults to UTC midnight.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/admin/audit-logs": {
+      "get": {
+        "operationId": "AdminController_auditLogs_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned as nextCursor by the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/dev/mock-pushes": {
+      "get": {
+        "operationId": "DevController_mockPushes_v1",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[dev] Recent mock push deliveries to your devices",
+        "tags": [
+          "dev"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/media/uploads": {
+      "post": {
+        "operationId": "MediaController_createUpload_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUploadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/media/{mediaId}": {
+      "get": {
+        "operationId": "MediaController_download_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mediaId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "media"
+        ]
+      }
+    },
+    "/v1/auth/register": {
+      "post": {
+        "operationId": "AuthController_register_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "operationId": "AuthController_login_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/verify-email": {
+      "post": {
+        "operationId": "AuthController_verifyEmail_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/resend-verification": {
+      "post": {
+        "operationId": "AuthController_resend_v1",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/password/forgot": {
+      "post": {
+        "operationId": "AuthController_forgot_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/auth/password/reset": {
+      "post": {
+        "operationId": "AuthController_reset_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/v1/me": {
+      "get": {
+        "operationId": "MeController_me_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      },
+      "patch": {
+        "operationId": "MeController_update_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/v1/me/password": {
+      "post": {
+        "operationId": "MeController_changePassword_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/v1/communities": {
+      "post": {
+        "operationId": "CommunitiesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommunityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a community; the creator becomes its Owner",
+        "tags": [
+          "communities"
+        ]
+      }
+    },
+    "/v1/communities/mine": {
+      "get": {
+        "operationId": "CommunitiesController_mine_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "All communities the caller belongs to or has requested to join",
+        "tags": [
+          "communities"
+        ]
+      }
+    },
+    "/v1/communities/preview": {
+      "get": {
+        "operationId": "CommunitiesController_preview_v1",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Preview a community by code before requesting to join (PRD §9 step 2)",
+        "tags": [
+          "communities"
+        ]
+      }
+    },
+    "/v1/communities/join": {
+      "post": {
+        "operationId": "CommunitiesController_join_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinCommunityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Request to join with a community code; status becomes PENDING",
+        "tags": [
+          "communities"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}": {
+      "get": {
+        "operationId": "CommunitiesController_get_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "communities"
+        ]
+      },
+      "patch": {
+        "operationId": "CommunitiesController_update_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommunityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update settings. Admin: description, WhatsApp link. Owner: also name/type/location.",
+        "tags": [
+          "communities"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/identification-field": {
+      "put": {
+        "operationId": "CommunitiesController_setIdentificationField_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetIdentificationFieldDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "communities"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/invite-code/rotate": {
+      "post": {
+        "operationId": "CommunitiesController_rotate_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Regenerate the community code. Existing members are unaffected.",
+        "tags": [
+          "communities"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/membership": {
+      "get": {
+        "operationId": "MembershipsController_mine_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Caller's own membership in any status (pending/rejected/...)",
+        "tags": [
+          "memberships"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/leave": {
+      "post": {
+        "operationId": "MembershipsController_leave_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Leave the community or withdraw a pending join request",
+        "tags": [
+          "memberships"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/members": {
+      "get": {
+        "operationId": "MembershipsController_list_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned as nextCursor by the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED",
+                "SUSPENDED",
+                "REMOVED",
+                "LEFT"
+              ]
+            }
+          },
+          {
+            "name": "role",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "OWNER",
+                "ADMIN",
+                "MEMBER"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Search name, email, phone or identification value",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "memberships"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/members/{membershipId}/role": {
+      "post": {
+        "operationId": "MembershipsController_setRole_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "membershipId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Owner: add or remove an Admin",
+        "tags": [
+          "memberships"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/members/{membershipId}/{action}": {
+      "post": {
+        "operationId": "MembershipsController_act_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "membershipId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "approve",
+                "reject",
+                "suspend",
+                "reinstate",
+                "remove"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "approve | reject | suspend | reinstate | remove",
+        "tags": [
+          "memberships"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/emergencies": {
+      "post": {
+        "operationId": "EmergenciesController_report_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Client-generated unique key; retries with the same key return the original result",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportEmergencyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Report an emergency (PRD §11). Becomes PENDING until an admin confirms.",
+        "tags": [
+          "emergencies"
+        ]
+      },
+      "get": {
+        "operationId": "EmergenciesController_list_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned as nextCursor by the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "PENDING",
+                  "ACTIVE",
+                  "DISMISSED",
+                  "RESOLVED"
+                ]
+              }
+            }
+          },
+          {
+            "name": "pathway",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NORMAL",
+                "CRITICAL"
+              ]
+            }
+          },
+          {
+            "name": "mine",
+            "required": false,
+            "in": "query",
+            "description": "Only the caller's own reports",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/critical-alerts": {
+      "post": {
+        "operationId": "EmergenciesController_trigger_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Client-generated unique key; retries with the same key return the original result",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TriggerCriticalAlertDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Send a Critical Alert (PRD §13). No category, no admin approval. Call only after the user confirmed.",
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/emergencies/{emergencyId}/acknowledge": {
+      "post": {
+        "operationId": "EmergenciesController_acknowledge_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Acknowledge a broadcast alert. Idempotent: once per member.",
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/emergencies/{emergencyId}": {
+      "get": {
+        "operationId": "EmergenciesController_get_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/emergencies/{emergencyId}/updates": {
+      "get": {
+        "operationId": "EmergenciesController_updates_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "emergencies"
+        ]
+      },
+      "post": {
+        "operationId": "EmergenciesController_postUpdate_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Client-generated unique key; retries with the same key return the original result",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/emergencies/{emergencyId}/timeline": {
+      "get": {
+        "operationId": "EmergenciesController_timeline_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/emergencies/{emergencyId}/confirm": {
+      "post": {
+        "operationId": "EmergenciesController_confirm_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmEmergencyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "CONFIRM & BROADCAST a pending report (PENDING → ACTIVE)",
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/emergencies/{emergencyId}/dismiss": {
+      "post": {
+        "operationId": "EmergenciesController_dismiss_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DismissEmergencyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "DISMISS a pending report (PENDING → DISMISSED). Stays in admin history.",
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/emergencies/{emergencyId}/resolve": {
+      "post": {
+        "operationId": "EmergenciesController_resolve_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveEmergencyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "RESOLVE with a required resolution message (ACTIVE → RESOLVED)",
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/emergencies/{emergencyId}/acknowledgments": {
+      "get": {
+        "operationId": "EmergenciesController_ackSummary_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/communities/{communityId}/emergencies/{emergencyId}/acknowledgments/recipients": {
+      "get": {
+        "operationId": "EmergenciesController_ackRecipients_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned as nextCursor by the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "acknowledged",
+                "not_acknowledged"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
+    "/v1/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list_v1",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned as nextCursor by the previous page",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 100,
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "communityId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "unreadOnly",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationsController_unread_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/notifications/read-all": {
+      "post": {
+        "operationId": "NotificationsController_readAll_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/notifications/{id}/read": {
+      "post": {
+        "operationId": "NotificationsController_read_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/v1/devices": {
+      "post": {
+        "operationId": "DevicesController_register_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDeviceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "devices"
+        ]
+      },
+      "get": {
+        "operationId": "DevicesController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "devices"
+        ]
+      }
+    },
+    "/v1/devices/unregister": {
+      "post": {
+        "operationId": "DevicesController_unregister_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnregisterDeviceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "devices"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "EMCOM API",
+    "description": "EMCOM — Your Community's Emergency Network. All community routes enforce per-community roles server-side.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "CreateUploadDto": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "example": "image/jpeg"
+          },
+          "sizeBytes": {
+            "type": "number",
+            "example": 524288
+          }
+        },
+        "required": [
+          "contentType",
+          "sizeBytes"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "example": "David Okafor"
+          },
+          "email": {
+            "type": "string",
+            "example": "david@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+2348012345678",
+            "description": "International format, digits only after +"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 10
+          }
+        },
+        "required": [
+          "fullName",
+          "email",
+          "phone",
+          "password"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "VerifyEmailDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "code",
+          "newPassword"
+        ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string"
+          },
+          "newPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "IdentificationFieldDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "example": "Block / Apartment"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "label",
+          "required"
+        ]
+      },
+      "CreateCommunityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Jacob Mews"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ESTATE",
+              "NEIGHBORHOOD",
+              "CHURCH",
+              "SCHOOL",
+              "WORKPLACE",
+              "HOTEL",
+              "APARTMENT_COMPLEX",
+              "INDUSTRIAL_FACILITY",
+              "OTHER"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "example": "Lagos, Nigeria"
+          },
+          "description": {
+            "type": "string"
+          },
+          "identificationField": {
+            "$ref": "#/components/schemas/IdentificationFieldDto"
+          },
+          "whatsappUrl": {
+            "type": "string",
+            "example": "https://chat.whatsapp.com/AbCdEfGhIjKlMnOp"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "location"
+        ]
+      },
+      "JoinCommunityDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "JACOB7KQ2M"
+          },
+          "identificationValue": {
+            "type": "string",
+            "example": "B12"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "UpdateCommunityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ESTATE",
+              "NEIGHBORHOOD",
+              "CHURCH",
+              "SCHOOL",
+              "WORKPLACE",
+              "HOTEL",
+              "APARTMENT_COMPLEX",
+              "INDUSTRIAL_FACILITY",
+              "OTHER"
+            ]
+          },
+          "location": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "whatsappUrl": {
+            "type": "object",
+            "nullable": true,
+            "description": "null clears the link"
+          }
+        }
+      },
+      "SetIdentificationFieldDto": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "nullable": true,
+            "description": "null removes the field",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IdentificationFieldDto"
+              }
+            ]
+          }
+        }
+      },
+      "SetRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "MEMBER"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "ReportEmergencyDto": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "FIRE",
+              "SECURITY_THREAT",
+              "MEDICAL_EMERGENCY",
+              "ELECTRICAL_EMERGENCY",
+              "GAS_LEAK",
+              "FLOOD",
+              "OTHER"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "example": "Block B, near the generator house"
+          },
+          "description": {
+            "type": "string",
+            "example": "Smoke coming from the generator house"
+          },
+          "mediaIds": {
+            "description": "Media ids from POST /media/uploads",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "category",
+          "location",
+          "description"
+        ]
+      },
+      "TriggerCriticalAlertDto": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "example": "Gate 2"
+          }
+        }
+      },
+      "ConfirmEmergencyDto": {
+        "type": "object",
+        "properties": {
+          "instructions": {
+            "type": "string",
+            "example": "Avoid the area and follow community instructions."
+          }
+        }
+      },
+      "DismissEmergencyDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          }
+        }
+      },
+      "PostUpdateDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "example": "Security personnel have arrived at Gate 2. Please remain indoors."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ResolveEmergencyDto": {
+        "type": "object",
+        "properties": {
+          "resolutionMessage": {
+            "type": "string",
+            "example": "Security personnel responded and the situation has been resolved."
+          }
+        },
+        "required": [
+          "resolutionMessage"
+        ]
+      },
+      "RegisterDeviceDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "IOS",
+              "ANDROID",
+              "WEB"
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "MOCK",
+              "EXPO",
+              "FCM"
+            ]
+          },
+          "appVersion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "platform",
+          "provider"
+        ]
+      },
+      "UnregisterDeviceDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      }
+    }
+  }
+}

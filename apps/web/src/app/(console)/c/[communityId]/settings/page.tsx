@@ -54,7 +54,7 @@ function CodeCard({ c }: { c: CommunityDto }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-6 sm:flex-row sm:items-center">
         <div className="rounded-lg border bg-white p-4" aria-label={`QR code for community code ${code}`}>
-          <QRCodeSVG value={`emcom://join?code=${code}`} size={168} level="M" />
+          <QRCodeSVG value={`emcom://communities/join?code=${code}`} size={168} level="M" />
         </div>
         <div className="grid gap-3">
           <p className="font-mono text-4xl font-bold tracking-widest" aria-label={`Community code ${code.split('').join(' ')}`}>

@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "EMCOM",
+    "slug": "emcom",
+    "scheme": "emcom",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": { "backgroundColor": "#C8102E", "resizeMode": "contain" },
+    "ios": {
+      "bundleIdentifier": "com.emcom.app",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "EMCOM uses the camera so you can attach a photo or video to an emergency report.",
+        "NSPhotoLibraryUsageDescription": "EMCOM lets you attach a photo or video to an emergency report.",
+        "UIBackgroundModes": ["remote-notification"]
+      },
+      "entitlements": {
+        "com.apple.developer.usernotifications.time-sensitive": true
+      }
+    },
+    "android": {
+      "package": "com.emcom.app",
+      "adaptiveIcon": { "backgroundColor": "#C8102E" },
+      "permissions": ["POST_NOTIFICATIONS", "VIBRATE", "CAMERA"],
+      "blockedPermissions": ["android.permission.USE_FULL_SCREEN_INTENT"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        { "color": "#C8102E", "defaultChannel": "emergency-alerts" }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "EMCOM lets you attach a photo or video to an emergency report.",
+          "cameraPermission": "EMCOM uses the camera so you can attach a photo or video to an emergency report."
+        }
+      ]
+    ],
+    "experiments": { "typedRoutes": false },
+    "extra": {
+      "apiBaseUrl": "",
+      "eas": { "projectId": "" }
+    }
+  }
+}
