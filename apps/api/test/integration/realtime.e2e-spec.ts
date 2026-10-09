@@ -55,6 +55,13 @@ describe('Realtime gateway', () => {
   });
   beforeEach(() => flushRedis());
 
+  it('a join sent immediately on connect waits for authentication (no race)', async () => {
+    const s = io(`${h.url}/realtime`, { auth: { token: member.token }, transports: ['websocket'], reconnection: false, forceNew: true });
+    sockets.push(s);
+    const ack = await new Promise<{ ok: boolean }>((resolve) => s.on('connect', () => void join(s, community.id).then(resolve)));
+    expect(ack).toEqual({ ok: true });
+  });
+
   it('rejects connections without a valid token', async () => {
     await expect(connect()).rejects.toThrow();
     await expect(connect('garbage')).rejects.toThrow();

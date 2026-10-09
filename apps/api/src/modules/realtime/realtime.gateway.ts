@@ -19,6 +19,8 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 interface SocketData {
   userId: string;
   expiryTimer?: NodeJS.Timeout;
+  /** Resolves once the handshake token has been verified; messages wait for it. */
+  ready?: Promise<void>;
 }
 
 /**
@@ -42,7 +44,13 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection {
     this.realtime.attach(server);
   }
 
-  async handleConnection(socket: Socket): Promise<void> {
+  handleConnection(socket: Socket): Promise<void> {
+    const data = socket.data as SocketData;
+    data.ready = this.authenticate(socket);
+    return data.ready;
+  }
+
+  private async authenticate(socket: Socket): Promise<void> {
     const token = (socket.handshake.auth as { token?: string })?.token;
     try {
       if (!token) throw new Error('missing token');
@@ -66,6 +74,7 @@ export class RealtimeGateway implements OnGatewayInit, OnGatewayConnection {
 
   @SubscribeMessage(RealtimeEvent.JOIN_COMMUNITY)
   async join(@ConnectedSocket() socket: Socket, @MessageBody() body: { communityId?: string }): Promise<JoinAck> {
+    await (socket.data as SocketData).ready;
     const userId = (socket.data as SocketData).userId;
     const communityId = body?.communityId;
     if (!userId) return { ok: false, error: 'UNAUTHORIZED' };

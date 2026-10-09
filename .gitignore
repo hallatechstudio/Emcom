@@ -14,3 +14,4 @@ apps/mobile/android
 apps/mobile/expo-env.d.ts
 *.tsbuildinfo
 .DS_Store
+apps/web/next-env.d.ts
