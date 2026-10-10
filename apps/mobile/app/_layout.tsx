@@ -81,6 +81,7 @@ export default function RootLayout() {
           <Stack.Screen name="communities/join" options={{ title: 'Join community' }} />
           <Stack.Screen name="communities/pending/[communityId]" options={{ title: 'Join request' }} />
           <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
+          <Stack.Screen name="account" options={{ title: 'Account' }} />
           <Stack.Screen name="c/[communityId]" options={{ headerShown: false }} />
         </Stack>
       </QueryClientProvider>

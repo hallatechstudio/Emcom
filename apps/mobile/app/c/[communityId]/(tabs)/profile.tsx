@@ -5,8 +5,9 @@ import { Alert, Linking } from 'react-native';
 import { Body, Button, Card, Field, H1, InlineError, Screen } from '@/components/ui';
 import { useCommunity } from '@/hooks/queries';
 import { api, messageOf } from '@/lib/api';
-import { getPermission, registerDevice, requestPermission, unregisterDevice } from '@/lib/notifications';
-import { getStoredRefreshToken, useSession } from '@/lib/session-store';
+import { getPermission, registerDevice, requestPermission } from '@/lib/notifications';
+import { useSession } from '@/lib/session-store';
+import { confirmSignOut } from '@/lib/sign-out';
 
 /** Screen 22 — Profile: account, notification status/guidance, membership, sign out. */
 export default function Profile() {
@@ -30,15 +31,6 @@ export default function Profile() {
       router.replace('/communities');
     },
   });
-
-  async function signOut() {
-    await unregisterDevice();
-    const rt = await getStoredRefreshToken();
-    if (rt) await api.auth.logout(rt).catch(() => undefined);
-    await useSession.getState().clear();
-    qc.clear();
-    router.replace('/welcome');
-  }
 
   return (
     <Screen>
@@ -88,7 +80,7 @@ export default function Profile() {
         </Card>
       ) : null}
       <Button title="My communities" variant="outline" onPress={() => router.navigate('/communities')} />
-      <Button title="Sign out" variant="ghost" onPress={() => void signOut()} />
+      <Button testID="sign-out" title="SIGN OUT" variant="outline" icon="log-out-outline" onPress={() => confirmSignOut(qc)} />
       <Body muted style={{ fontSize: 12, textAlign: 'center' }}>
         EMCOM is not a replacement for police, fire, ambulance or other emergency services.
       </Body>

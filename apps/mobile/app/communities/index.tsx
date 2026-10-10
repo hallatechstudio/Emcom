@@ -28,6 +28,11 @@ export default function MyCommunities() {
     <>
       <Stack.Screen
         options={{
+          headerLeft: () => (
+            <Pressable accessibilityRole="button" accessibilityLabel="Account and sign out" onPress={() => router.push('/account')} style={{ padding: 8, minWidth: 48, minHeight: 48, justifyContent: 'center' }}>
+              <Ionicons name="person-circle-outline" size={28} color={colors.ink} />
+            </Pressable>
+          ),
           headerRight: () => (
             <Pressable accessibilityRole="button" accessibilityLabel={`Notifications, ${unread.data?.count ?? 0} unread`} onPress={() => router.push('/notifications')} style={{ padding: 8, minWidth: 48, minHeight: 48, justifyContent: 'center' }}>
               <Ionicons name="notifications-outline" size={26} color={colors.ink} />
