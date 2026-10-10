@@ -1,4 +1,9 @@
+import { config as loadDotenv } from 'dotenv';
 import { z } from 'zod';
+
+// Local development: read apps/api/.env (never overrides variables already set, e.g. by Docker/CI).
+// Tests load .env.test explicitly instead.
+if (process.env.NODE_ENV !== 'test') loadDotenv();
 
 const bool = z
   .union([z.boolean(), z.string()])

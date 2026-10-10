@@ -38,7 +38,8 @@ pnpm db:seed                                 # demo communities & users
 pnpm api:dev        # http://localhost:4000  (Swagger: /docs)
 pnpm worker:dev     # outbox → fan-out → push (mock); metrics :9464
 pnpm web:dev        # http://localhost:3001  admin console
-pnpm mobile:start   # Expo; press i (iOS simulator) / a (Android) or scan with Expo Go (SDK 54)
+pnpm mobile:start   # Expo Go; press i (iOS simulator) / a (Android) or scan the QR (Expo Go SDK 54)
+                    # with an EAS development build installed: pnpm --filter @emcom/mobile start:dev-client
 ```
 
 A phone on the same Wi-Fi reaches the API automatically (`http://<Metro host>:4000`). For media uploads from
