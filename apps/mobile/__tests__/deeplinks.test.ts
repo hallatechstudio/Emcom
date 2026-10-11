@@ -52,7 +52,7 @@ describe('notification deep links (E2E 14)', () => {
 
   it('every MVP member screen from the PRD exists', () => {
     for (const p of [
-      'index.tsx', 'welcome.tsx', 'account.tsx', 'register.tsx', 'login.tsx', 'otp.tsx', 'communities/index.tsx', 'communities/create.tsx',
+      'index.tsx', 'welcome.tsx', 'account.tsx', 'communities/scan.tsx', 'register.tsx', 'login.tsx', 'otp.tsx', 'communities/index.tsx', 'communities/create.tsx',
       'communities/join.tsx', 'communities/pending/[communityId].tsx', 'c/[communityId]/(tabs)/index.tsx', 'c/[communityId]/report.tsx',
       'c/[communityId]/report-submitted.tsx', 'c/[communityId]/critical.tsx', 'c/[communityId]/critical-confirm.tsx',
       'c/[communityId]/critical-sent/[emergencyId].tsx', 'c/[communityId]/incoming/[emergencyId].tsx',

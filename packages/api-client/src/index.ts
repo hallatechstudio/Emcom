@@ -25,6 +25,7 @@ import type {
   Paginated,
   PresignedUploadDto,
   PushProviderName,
+  ReminderResultDto,
   UserDto,
 } from '@emcom/shared-types';
 
@@ -197,9 +198,13 @@ export function createApiClient(opts: ClientOptions) {
       list: (id: string, q: { status?: EmergencyStatus[]; pathway?: EmergencyPathway; mine?: boolean; cursor?: string; limit?: number } = {}) =>
         get<Paginated<EmergencyDto>>(`${c(id)}/emergencies`, q),
       get: (id: string, emergencyId: string) => get<EmergencyDto>(`${c(id)}/emergencies/${emergencyId}`),
-      report: (id: string, b: { category: EmergencyCategory; location: string; description: string; mediaIds?: string[] }, idempotencyKey: string) =>
+      report: (
+        id: string,
+        b: { category: EmergencyCategory; location: string; description: string; mediaIds?: string[]; coordinates?: Coordinates },
+        idempotencyKey: string,
+      ) =>
         post<EmergencyDto>(`${c(id)}/emergencies`, b, { idempotencyKey }),
-      triggerCritical: (id: string, idempotencyKey: string, b: { location?: string } = {}) =>
+      triggerCritical: (id: string, idempotencyKey: string, b: { location?: string; coordinates?: Coordinates } = {}) =>
         post<CriticalAlertResultDto>(`${c(id)}/critical-alerts`, b, { idempotencyKey }),
       acknowledge: (id: string, emergencyId: string) =>
         post<{ acknowledgedAt: string; alreadyAcknowledged: boolean }>(`${c(id)}/emergencies/${emergencyId}/acknowledge`),
@@ -213,6 +218,7 @@ export function createApiClient(opts: ClientOptions) {
         post<EmergencyUpdateDto>(`${c(id)}/emergencies/${emergencyId}/updates`, { message }, { idempotencyKey }),
       resolve: (id: string, emergencyId: string, resolutionMessage: string) =>
         post<EmergencyDto>(`${c(id)}/emergencies/${emergencyId}/resolve`, { resolutionMessage }),
+      remind: (id: string, emergencyId: string) => post<ReminderResultDto>(`${c(id)}/emergencies/${emergencyId}/remind`),
       ackSummary: (id: string, emergencyId: string) => get<AckSummaryDto>(`${c(id)}/emergencies/${emergencyId}/acknowledgments`),
       ackRecipients: (id: string, emergencyId: string, q: { filter?: 'acknowledged' | 'not_acknowledged'; q?: string; cursor?: string; limit?: number } = {}) =>
         get<Paginated<AckRecipientDto>>(`${c(id)}/emergencies/${emergencyId}/acknowledgments/recipients`, q),
@@ -255,6 +261,12 @@ export interface MockPushRecord {
   lastError: string | null;
   device: { platform: string; tokenSuffix: string };
   notification: { id: string; type: string; priority: string; title: string; body: string; communityId: string | null; emergencyId: string | null };
+}
+
+export interface Coordinates {
+  latitude: number;
+  longitude: number;
+  accuracyM?: number;
 }
 
 export type EmcomClient = ReturnType<typeof createApiClient>;

@@ -14,6 +14,7 @@ Built as vertical slices; each slice ended with checks run and the requirements 
 | 8 | Mobile UX (all 22 member screens + admin journeys, deep links, permission education, offline) | ✅ | `apps/mobile`, jest suites, Android bundle export, iOS simulator boot |
 | 9 | Admin web (all admin screens) | ✅ | `apps/web` build + browser verification |
 | 10 | Security hardening, CI, Dockerfiles, docs | ✅ | `.github/workflows/ci.yml`, `infra/docker/*`, `docs/*` |
+| 11 | UX round 1: GPS location, acknowledgment reminders, in-app alarm, app-wide realtime, offline cache, QR scanner, mobile media, change password, account/sign-out | ✅ | api: reminders-location; mobile: 28 jest tests |
 
 ## Remaining work (outside this build's reach)
 1. **Provider/legal decision on push transport** (FCM/Expo terms on emergency use) — blocker for production.

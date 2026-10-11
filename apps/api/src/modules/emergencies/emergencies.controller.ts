@@ -9,6 +9,7 @@ import type {
   EmergencyEventDto,
   EmergencyUpdateDto,
   Paginated,
+  ReminderResultDto,
 } from '@emcom/shared-types';
 import { CommunityRole, CurrentMembership, IdempotencyKey, Meta, RequestMeta } from '../../common/auth/decorators';
 import { AcknowledgmentsService } from './acknowledgments.service';
@@ -183,6 +184,19 @@ export class EmergenciesController {
     @Meta() meta: RequestMeta,
   ): Promise<EmergencyDto> {
     return this.emergencies.resolve(m, id, dto, meta);
+  }
+
+  @Post('emergencies/:emergencyId/remind')
+  @HttpCode(200)
+  @CommunityRole('ADMIN')
+  @ApiOperation({ summary: 'Re-notify approved recipients who have not acknowledged (max once per 2 minutes)' })
+  remind(
+    @Param('communityId', ParseUUIDPipe) _c: string,
+    @Param('emergencyId', ParseUUIDPipe) id: string,
+    @CurrentMembership() m: CommunityMembership,
+    @Meta() meta: RequestMeta,
+  ): Promise<ReminderResultDto> {
+    return this.emergencies.remind(m, id, meta);
   }
 
   @Get('emergencies/:emergencyId/acknowledgments')

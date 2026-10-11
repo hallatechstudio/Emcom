@@ -1,5 +1,10 @@
 import type { NotificationType } from './enums';
 
+/** Map link for a GPS fix (opens Google Maps in a browser or the installed maps app). */
+export function mapsUrl(c: { latitude: number; longitude: number }): string {
+  return `https://www.google.com/maps/search/?api=1&query=${c.latitude.toFixed(6)},${c.longitude.toFixed(6)}`;
+}
+
 /** Data payload attached to every push. Contains identifiers only — never incident text. */
 export interface PushData {
   notificationId: string;
@@ -18,7 +23,7 @@ export function routeForNotification(data: Partial<PushData>): string {
     if (type === 'EMERGENCY_REPORT_RECEIVED') {
       return `/c/${communityId}/admin/emergency/${emergencyId}`;
     }
-    if (type === 'CRITICAL_ALERT' || type === 'EMERGENCY_BROADCAST') {
+    if (type === 'CRITICAL_ALERT' || type === 'EMERGENCY_BROADCAST' || type === 'EMERGENCY_REMINDER') {
       return `/c/${communityId}/incoming/${emergencyId}`;
     }
     return `/c/${communityId}/emergency/${emergencyId}`;

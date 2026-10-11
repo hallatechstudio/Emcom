@@ -3,11 +3,12 @@ import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { newIdempotencyKey } from '@emcom/api-client';
+import { newIdempotencyKey, type Coordinates } from '@emcom/api-client';
 import { ALLOWED_MEDIA_TYPES, EmergencyCategory, EmergencyCategoryLabel, Limits } from '@emcom/shared-types';
 import { Body, Button, Field, InlineError, Screen, styles } from '@/components/ui';
 import { useCommunity } from '@/hooks/queries';
 import { api, messageOf } from '@/lib/api';
+import { getCurrentCoordinates } from '@/lib/location';
 import { colors, radius, space } from '@/lib/theme';
 
 const ICONS: Record<EmergencyCategory, keyof typeof Ionicons.glyphMap> = {
@@ -35,6 +36,9 @@ export default function ReportEmergency() {
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [coords, setCoords] = useState<Coordinates | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locError, setLocError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // One key per report attempt: retries after a network failure cannot create duplicates.
@@ -57,6 +61,15 @@ export default function ReportEmergency() {
     setAttachments((x) => [...x, { uri: a.uri, mimeType, size, kind }].slice(0, Limits.maxMediaPerReport));
   }
 
+  async function attachLocation() {
+    setLocating(true);
+    setLocError(null);
+    const r = await getCurrentCoordinates({ prompt: true });
+    setLocating(false);
+    if (r.ok) setCoords(r.coords);
+    else setLocError(r.reason === 'denied' ? 'Location permission is off. Type the location instead, or enable it in Settings.' : 'Could not get a GPS fix. Type the location instead.');
+  }
+
   async function upload(a: Attachment): Promise<string | null> {
     const blob = await (await fetch(a.uri)).blob();
     const presigned = await api.media.createUpload(communityId, a.mimeType, blob.size || a.size);
@@ -76,7 +89,7 @@ export default function ReportEmergency() {
         if (id) mediaIds.push(id);
       }
       setBusy('Sending report…');
-      const e = await api.emergencies.report(communityId, { category, location: location.trim(), description: description.trim(), mediaIds }, idem.current);
+      const e = await api.emergencies.report(communityId, { category, location: location.trim(), description: description.trim(), mediaIds, coordinates: coords ?? undefined }, idem.current);
       router.replace({ pathname: '/c/[communityId]/report-submitted', params: { communityId, emergencyId: e.id, media: String(attachments.length - mediaIds.length) } });
     } catch (e) {
       setError(`${messageOf(e)} Your report was not sent — tap Submit to retry.`);
@@ -110,6 +123,17 @@ export default function ReportEmergency() {
         })}
       </View>
       <Field label="Location" placeholder="e.g. Block B, near the generator house" value={location} onChangeText={setLocation} maxLength={160} />
+      {coords ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.safeSoft, borderRadius: radius.md, padding: 12 }}>
+          <Text accessibilityLiveRegion="polite" style={{ color: colors.safe, fontWeight: '800', flexShrink: 1 }}>
+            GPS location attached{coords.accuracyM != null ? ` (±${coords.accuracyM} m)` : ''}
+          </Text>
+          <Button title="Remove" variant="ghost" onPress={() => setCoords(null)} />
+        </View>
+      ) : (
+        <Button title={locating ? 'Getting your location…' : 'USE MY CURRENT LOCATION'} variant="outline" icon="locate-outline" loading={locating} onPress={() => void attachLocation()} accessibilityHint="Attaches your phone's GPS position so responders can find you" />
+      )}
+      <InlineError message={locError} />
       <Field label="Description" placeholder="What is happening?" multiline value={description} onChangeText={setDescription} maxLength={Limits.emergencyDescription.max} />
       <Text style={styles.label}>Photo or video (optional)</Text>
       <View style={{ flexDirection: 'row', gap: space(2) }}>

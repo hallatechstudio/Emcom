@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Linking, Pressable, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ApiError, newIdempotencyKey } from '@emcom/api-client';
+import { ApiError, newIdempotencyKey, type Coordinates } from '@emcom/api-client';
 import { useCommunity } from '@/hooks/queries';
 import { api, messageOf } from '@/lib/api';
+import { getCurrentCoordinates } from '@/lib/location';
 import { colors, radius, space } from '@/lib/theme';
 
 /**
@@ -22,6 +23,34 @@ export default function CriticalConfirm() {
   const [error, setError] = useState<string | null>(null);
   const [showLocation, setShowLocation] = useState(false);
   const [location, setLocation] = useState('');
+  const [coords, setCoords] = useState<Coordinates | null>(null);
+  const [gpsState, setGpsState] = useState<'idle' | 'locating' | 'attached' | 'off'>('idle');
+
+  // If location permission is ALREADY granted, fetch a fix silently while the user reads the
+  // confirmation. Sending never waits for it: whatever is available at YES is attached.
+  useEffect(() => {
+    let alive = true;
+    setGpsState('locating');
+    void getCurrentCoordinates({ prompt: false, timeoutMs: 6000 }).then((r) => {
+      if (!alive) return;
+      if (r.ok) {
+        setCoords(r.coords);
+        setGpsState('attached');
+      } else setGpsState('off');
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  async function shareGps() {
+    setGpsState('locating');
+    const r = await getCurrentCoordinates({ prompt: true, timeoutMs: 8000 });
+    if (r.ok) {
+      setCoords(r.coords);
+      setGpsState('attached');
+    } else setGpsState('off');
+  }
 
   async function send() {
     if (sending) return;
@@ -29,7 +58,10 @@ export default function CriticalConfirm() {
     setError(null);
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     try {
-      const res = await api.emergencies.triggerCritical(communityId, key.current, location.trim() ? { location: location.trim() } : {});
+      const res = await api.emergencies.triggerCritical(communityId, key.current, {
+        ...(location.trim() ? { location: location.trim() } : {}),
+        ...(coords ? { coordinates: coords } : {}),
+      });
       router.replace({ pathname: '/c/[communityId]/critical-sent/[emergencyId]', params: { communityId, emergencyId: res.emergency.id, coalesced: res.coalesced ? '1' : '0' } });
     } catch (e) {
       setError(
@@ -68,6 +100,15 @@ export default function CriticalConfirm() {
             <Text style={{ color: '#fff', textDecorationLine: 'underline', fontSize: 15 }}>Add location (optional)</Text>
           </Pressable>
         )}
+        {gpsState === 'attached' ? (
+          <Text accessibilityLiveRegion="polite" style={{ color: '#fff', fontSize: 14 }}>
+            📍 Your GPS location will be included{coords?.accuracyM != null ? ` (±${coords.accuracyM} m)` : ''}
+          </Text>
+        ) : gpsState === 'off' ? (
+          <Pressable accessibilityRole="button" onPress={() => void shareGps()} style={{ minHeight: 44, justifyContent: 'center' }}>
+            <Text style={{ color: '#fff', textDecorationLine: 'underline', fontSize: 15 }}>Share my GPS location (optional)</Text>
+          </Pressable>
+        ) : null}
         {error ? (
           <View accessibilityRole="alert" style={{ backgroundColor: '#fff', borderRadius: radius.md, padding: space(3), alignSelf: 'stretch', gap: 6 }}>
             <Text style={{ color: colors.emergency, fontWeight: '900' }}>{error}</Text>

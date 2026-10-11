@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CommunityTypeLabel, normalizeCommunityCode, type CommunityPreviewDto } from '@emcom/shared-types';
 import { Body, Button, Card, Field, H1, InlineError, Screen } from '@/components/ui';
 import { api, messageOf } from '@/lib/api';
@@ -14,6 +14,12 @@ export default function JoinCommunity() {
   const [idValue, setIdValue] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Arriving from the QR scanner or an emcom:// link: look the code up straight away.
+  useEffect(() => {
+    if (params.code) void lookup();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.code]);
 
   async function lookup() {
     setBusy(true);
@@ -47,6 +53,7 @@ export default function JoinCommunity() {
         <Field label="Community code" placeholder="JACOB4821" value={code} onChangeText={(t) => setCode(t.toUpperCase())} autoCapitalize="characters" autoCorrect={false} />
         <InlineError message={error} />
         <Button title="CONTINUE" large loading={busy} disabled={normalizeCommunityCode(code).length < 4} onPress={lookup} />
+        <Button title="SCAN QR CODE" variant="outline" icon="qr-code-outline" onPress={() => router.push('/communities/scan')} />
       </Screen>
     );
 

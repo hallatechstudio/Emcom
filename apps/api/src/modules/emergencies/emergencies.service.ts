@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { CommunityMembership, Prisma } from '@prisma/client';
-import type { EmergencyDto, EmergencyEventDto, EmergencyUpdateDto, Paginated } from '@emcom/shared-types';
+import type { EmergencyDto, EmergencyEventDto, EmergencyUpdateDto, Paginated, ReminderResultDto } from '@emcom/shared-types';
 import { canTransitionEmergency, isAdminRole, RealtimeEvent } from '@emcom/shared-types';
 import type { RequestMeta } from '../../common/auth/decorators';
 import { Errors } from '../../common/errors/app-error';
@@ -26,6 +26,13 @@ import type {
 } from './dto/emergency.dto';
 import { emergencyInclude, toEmergencyDto, toEventDto, toUpdateDto } from './presenters';
 import { appendEvent, lockEmergency } from './timeline';
+
+export function coordinateFields(c?: { latitude: number; longitude: number; accuracyM?: number }) {
+  return c ? { latitude: c.latitude, longitude: c.longitude, locationAccuracyM: c.accuracyM ?? null } : {};
+}
+
+/** Minimum gap between reminders for the same emergency, so members are not spammed. */
+export const REMINDER_COOLDOWN_SECONDS = 120;
 
 export interface Viewer {
   userId: string;
@@ -92,6 +99,7 @@ export class EmergenciesService {
               status: 'PENDING',
               category: dto.category,
               location: dto.location,
+              ...coordinateFields(dto.coordinates),
               description: dto.description,
               reporterId: membership.userId,
             },
@@ -302,6 +310,63 @@ export class EmergenciesService {
     });
     this.emitPublic(RealtimeEvent.EMERGENCY_CHANGED, admin.communityId, id, 'RESOLVED', seq);
     return this.getOne(viewer, id);
+  }
+
+  /**
+   * Re-notify approved recipients who have not acknowledged an ACTIVE emergency.
+   * Limited to one reminder per REMINDER_COOLDOWN_SECONDS; the check runs under the emergency row lock.
+   */
+  async remind(admin: CommunityMembership, id: string, meta: RequestMeta): Promise<ReminderResultDto> {
+    const result = await this.prisma.$transaction(async (tx) => {
+      const locked = await lockEmergency(tx, id, admin.communityId);
+      if (locked.status !== 'ACTIVE') {
+        throw Errors.conflict('EMERGENCY_NOT_ACTIVE', 'Reminders can only be sent for an active emergency');
+      }
+      const alert = await tx.emergencyAlert.findFirst({ where: { emergencyId: id, communityId: admin.communityId } });
+      if (!alert) throw Errors.notFound('Alert');
+      const last = await tx.emergencyEvent.findFirst({
+        where: { emergencyId: id, type: 'REMINDER_SENT' },
+        orderBy: { seq: 'desc' },
+      });
+      const nextAllowed = last ? new Date(last.createdAt.getTime() + REMINDER_COOLDOWN_SECONDS * 1000) : new Date(0);
+      if (nextAllowed > new Date()) {
+        throw Errors.tooMany(
+          'A reminder was sent recently. Please wait before sending another.',
+          Math.ceil((nextAllowed.getTime() - Date.now()) / 1000),
+        );
+      }
+      const pending = await tx.alertRecipient.count({
+        where: {
+          alertId: alert.id,
+          communityId: admin.communityId,
+          membership: { status: 'APPROVED' },
+          userId: { notIn: (await tx.alertAcknowledgment.findMany({ where: { alertId: alert.id }, select: { userId: true } })).map((a) => a.userId) },
+        },
+      });
+      if (pending === 0) throw Errors.conflict('NOTHING_TO_REMIND', 'Every member has already acknowledged this alert');
+      const seq = await appendEvent(tx, { id, communityId: admin.communityId }, 'REMINDER_SENT', admin.userId, `${pending} members reminded`);
+      const ev = await tx.emergencyEvent.findUniqueOrThrow({ where: { emergencyId_seq: { emergencyId: id, seq } } });
+      await this.outbox.enqueue(tx, OutboxType.EMERGENCY_REMINDER, { emergencyId: id, alertId: alert.id, eventId: ev.id }, {
+        aggregateId: id,
+        communityId: admin.communityId,
+        dedupeKey: `reminder:${ev.id}`,
+      });
+      await this.audit.record(
+        {
+          action: AuditAction.EMERGENCY_REMINDER_SENT,
+          entityType: 'emergency',
+          entityId: id,
+          communityId: admin.communityId,
+          actorId: admin.userId,
+          metadata: { remindedCount: pending },
+          meta,
+        },
+        tx,
+      );
+      return { remindedCount: pending, nextAllowedAt: new Date(ev.createdAt.getTime() + REMINDER_COOLDOWN_SECONDS * 1000), seq };
+    });
+    this.realtime.emit(RealtimeEvent.EMERGENCY_CHANGED, admin.communityId, { emergencyId: id, status: 'ACTIVE' }, { adminsOnly: true, emergencyId: id, seq: result.seq });
+    return { remindedCount: result.remindedCount, nextAllowedAt: result.nextAllowedAt.toISOString() };
   }
 
   // ---------------------------------------------------------------- reads

@@ -79,6 +79,7 @@ enum EmergencyEventType {
   COMMUNITY_ALERTED
   UPDATE_SENT
   RESOLVED
+  REMINDER_SENT
 }
 
 enum MediaStatus {
@@ -97,6 +98,7 @@ enum NotificationType {
   EMERGENCY_UPDATE
   EMERGENCY_RESOLVED
   REPORT_DISMISSED
+  EMERGENCY_REMINDER
 }
 
 enum NotificationPriority {
@@ -286,6 +288,10 @@ model Emergency {
   status              EmergencyStatus
   category            EmergencyCategory?
   location            String?
+  /// Optional device GPS fix captured by the reporter (WGS84). Free-text location stays primary.
+  latitude            Float?
+  longitude           Float?
+  locationAccuracyM   Float?
   description         String?
   instructions        String?
   reporterId          String             @db.Uuid

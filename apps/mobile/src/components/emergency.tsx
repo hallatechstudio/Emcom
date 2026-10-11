@@ -2,8 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { Linking, Pressable, Text, View } from 'react-native';
-import { isValidWhatsAppGroupUrl, type EmergencyDto } from '@emcom/shared-types';
+import { useState } from 'react';
+import { Image, Linking, Pressable, Text, View } from 'react-native';
+import { isValidWhatsAppGroupUrl, mapsUrl, type EmergencyDto } from '@emcom/shared-types';
 import { api, messageOf } from '@/lib/api';
 import { dateTime, titleOf } from '@/lib/format';
 import { colors, radius, space } from '@/lib/theme';
@@ -59,5 +60,64 @@ export function EmergencyListItem({ e, onPress }: { e: EmergencyDto; onPress?: (
       <Text style={{ color: colors.inkMuted }}>{e.location ?? 'Location not provided'}</Text>
       <Text style={{ color: colors.inkMuted, fontSize: 12 }}>{dateTime(e.reportedAt)}</Text>
     </Pressable>
+  );
+}
+
+/** Opens the reporter's GPS fix in the maps app (only shown when coordinates were shared). */
+export function MapLinkButton({ e }: { e: EmergencyDto }) {
+  if (!e.coordinates) return null;
+  const acc = e.coordinates.accuracyM != null ? ` (±${Math.round(e.coordinates.accuracyM)} m)` : '';
+  return (
+    <Button
+      title={`OPEN GPS LOCATION${acc}`}
+      variant="outline"
+      icon="map-outline"
+      accessibilityHint="Opens the reporter's shared GPS position in your maps app"
+      onPress={() => void Linking.openURL(mapsUrl(e.coordinates!))}
+    />
+  );
+}
+
+/**
+ * Attachments: each photo is fetched through the authorized API as a short-lived link only when
+ * the user taps it (saves data, and access is re-checked every time). Videos open in the system player.
+ */
+export function MediaGallery({ e }: { e: EmergencyDto }) {
+  const [urls, setUrls] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  if (!e.media.length) return null;
+  async function open(mediaId: string, kind: 'PHOTO' | 'VIDEO') {
+    setError(null);
+    setLoading(mediaId);
+    try {
+      const { url } = await api.media.downloadUrl(e.communityId, mediaId);
+      if (kind === 'VIDEO') await Linking.openURL(url);
+      else setUrls((u) => ({ ...u, [mediaId]: url }));
+    } catch (err) {
+      setError(messageOf(err));
+    } finally {
+      setLoading(null);
+    }
+  }
+  return (
+    <View style={{ gap: space(2) }}>
+      <Text style={{ fontWeight: '900', color: colors.ink }}>Attachments ({e.media.length})</Text>
+      {e.media.map((m, i) =>
+        urls[m.id] ? (
+          <Image key={m.id} source={{ uri: urls[m.id] }} accessibilityLabel={`Photo ${i + 1} attached to the report`} style={{ width: '100%', aspectRatio: 4 / 3, borderRadius: radius.md, backgroundColor: colors.line }} resizeMode="cover" />
+        ) : (
+          <Button
+            key={m.id}
+            title={`${m.kind === 'VIDEO' ? 'Play video' : 'View photo'} ${i + 1} (${Math.ceil(m.sizeBytes / 1024)} KB)`}
+            variant="outline"
+            icon={m.kind === 'VIDEO' ? 'play-circle-outline' : 'image-outline'}
+            loading={loading === m.id}
+            onPress={() => void open(m.id, m.kind)}
+          />
+        ),
+      )}
+      <InlineError message={error} />
+    </View>
   );
 }

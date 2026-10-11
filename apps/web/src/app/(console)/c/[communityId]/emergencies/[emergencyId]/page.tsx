@@ -1,11 +1,11 @@
 'use client';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Image as ImageIcon, MapPin, Megaphone, Send, Video } from 'lucide-react';
+import { ArrowLeft, BellRing, ExternalLink, Image as ImageIcon, MapPin, Megaphone, Send, Video } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { newIdempotencyKey } from '@emcom/api-client';
-import { EmergencyEventLabel, Limits, type EmergencyDto } from '@emcom/shared-types';
+import { EmergencyEventLabel, Limits, mapsUrl, type EmergencyDto } from '@emcom/shared-types';
 import { PathwayBadge, StatusBadge } from '@/components/console/emergency-bits';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -52,6 +52,12 @@ function Summary({ e, communityId }: { e: EmergencyDto; communityId: string }) {
         <h1 className="text-2xl font-bold">{emergencyTitle(e)}</h1>
         <p className="flex items-center gap-1 text-muted-foreground">
           <MapPin className="h-4 w-4" aria-hidden /> {e.location ?? 'Location not provided'}
+          {e.coordinates ? (
+            <a href={mapsUrl(e.coordinates)} target="_blank" rel="noopener noreferrer" className="ml-2 inline-flex items-center gap-1 font-medium text-primary underline">
+              Open GPS location in maps
+              {e.coordinates.accuracyM != null ? ` (±${Math.round(e.coordinates.accuracyM)} m)` : ''} <ExternalLink className="h-3 w-3" aria-hidden />
+            </a>
+          ) : null}
         </p>
       </CardHeader>
       <CardContent className="grid gap-4">
@@ -327,6 +333,11 @@ function Acknowledgments({ e, communityId }: { e: EmergencyDto; communityId: str
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
+  const qc = useQueryClient();
+  const remind = useMutation({
+    mutationFn: () => api.emergencies.remind(communityId, e.id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['community', communityId] }),
+  });
   const s = summary.data;
   const rows = recipients.data?.pages.flatMap((p) => p.items) ?? [];
   const delivery = s ? Object.entries(s.delivery) : [];
@@ -356,6 +367,20 @@ function Acknowledgments({ e, communityId }: { e: EmergencyDto; communityId: str
                 </Badge>
               ))}
             </div>
+          </div>
+        ) : null}
+        {e.status === 'ACTIVE' && s && s.notAcknowledgedCount > 0 ? (
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+            <Button variant="outline" disabled={remind.isPending} onClick={() => remind.mutate()}>
+              <BellRing className="h-4 w-4" aria-hidden />
+              {remind.isPending ? 'Sending…' : `Remind ${s.notAcknowledgedCount} who haven't acknowledged`}
+            </Button>
+            {remind.data ? (
+              <span className="text-sm text-safe" role="status">
+                Reminder sent to {remind.data.remindedCount} members. Next reminder possible at {formatTime(remind.data.nextAllowedAt)}.
+              </span>
+            ) : null}
+            <InlineError error={remind.error} />
           </div>
         ) : null}
         {s ? (

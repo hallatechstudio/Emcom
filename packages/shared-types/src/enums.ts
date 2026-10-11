@@ -84,6 +84,7 @@ export const EmergencyEventType = {
   COMMUNITY_ALERTED: 'COMMUNITY_ALERTED',
   UPDATE_SENT: 'UPDATE_SENT',
   RESOLVED: 'RESOLVED',
+  REMINDER_SENT: 'REMINDER_SENT',
 } as const;
 export type EmergencyEventType = (typeof EmergencyEventType)[keyof typeof EmergencyEventType];
 
@@ -96,6 +97,7 @@ export const EmergencyEventLabel: Record<EmergencyEventType, string> = {
   COMMUNITY_ALERTED: 'Community alerted',
   UPDATE_SENT: 'Update sent',
   RESOLVED: 'Emergency resolved',
+  REMINDER_SENT: 'Reminder sent to members who have not acknowledged',
 };
 
 /** PRD §25 (p.16) notification catalogue. REPORT_DISMISSED is an engineering extension. */
@@ -110,6 +112,7 @@ export const NotificationType = {
   EMERGENCY_UPDATE: 'EMERGENCY_UPDATE',
   EMERGENCY_RESOLVED: 'EMERGENCY_RESOLVED',
   REPORT_DISMISSED: 'REPORT_DISMISSED',
+  EMERGENCY_REMINDER: 'EMERGENCY_REMINDER',
 } as const;
 export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 

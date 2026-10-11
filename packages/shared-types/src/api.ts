@@ -108,6 +108,19 @@ export interface PresignedUploadDto {
   expiresAt: string;
 }
 
+export interface CoordinatesDto {
+  latitude: number;
+  longitude: number;
+  accuracyM: number | null;
+}
+
+export interface ReminderResultDto {
+  /** Approved recipients who had not acknowledged and were re-notified. */
+  remindedCount: number;
+  /** Earliest time another reminder may be sent. */
+  nextAllowedAt: string;
+}
+
 export interface EmergencyUpdateDto {
   id: string;
   emergencyId: string;
@@ -139,6 +152,8 @@ export interface EmergencyDto {
   status: EmergencyStatus;
   category: EmergencyCategory | null;
   location: string | null;
+  /** Reporter's GPS fix, if they chose to share it. */
+  coordinates: CoordinatesDto | null;
   description: string | null;
   instructions: string | null;
   reporter: { id: string; fullName: string } | null;

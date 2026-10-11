@@ -1464,6 +1464,43 @@
         ]
       }
     },
+    "/v1/communities/{communityId}/emergencies/{emergencyId}/remind": {
+      "post": {
+        "operationId": "EmergenciesController_remind_v1",
+        "parameters": [
+          {
+            "name": "communityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "emergencyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Re-notify approved recipients who have not acknowledged (max once per 2 minutes)",
+        "tags": [
+          "emergencies"
+        ]
+      }
+    },
     "/v1/communities/{communityId}/emergencies/{emergencyId}/acknowledgments": {
       "get": {
         "operationId": "EmergenciesController_ackSummary_v1",
@@ -2073,6 +2110,28 @@
           "role"
         ]
       },
+      "CoordinatesInputDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number",
+            "example": 6.5244
+          },
+          "longitude": {
+            "type": "number",
+            "example": 3.3792
+          },
+          "accuracyM": {
+            "type": "number",
+            "example": 12,
+            "description": "Horizontal accuracy in metres"
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude"
+        ]
+      },
       "ReportEmergencyDto": {
         "type": "object",
         "properties": {
@@ -2102,6 +2161,9 @@
             "items": {
               "type": "string"
             }
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/CoordinatesInputDto"
           }
         },
         "required": [
@@ -2116,6 +2178,9 @@
           "location": {
             "type": "string",
             "example": "Gate 2"
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/CoordinatesInputDto"
           }
         }
       },

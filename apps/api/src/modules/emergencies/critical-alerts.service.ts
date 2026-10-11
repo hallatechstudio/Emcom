@@ -13,7 +13,7 @@ import { OutboxService } from '../outbox/outbox.service';
 import { RealtimeService } from '../realtime/realtime.service';
 import { createBroadcast } from './broadcast';
 import type { TriggerCriticalAlertDto } from './dto/emergency.dto';
-import { EmergenciesService, viewerOf } from './emergencies.service';
+import { coordinateFields, EmergenciesService, viewerOf } from './emergencies.service';
 import { appendEvent } from './timeline';
 
 const SCOPE = 'critical_alert';
@@ -115,6 +115,7 @@ export class CriticalAlertsService {
                 pathway: 'CRITICAL',
                 status: 'ACTIVE',
                 location: dto.location || null,
+                ...coordinateFields(dto.coordinates),
                 reporterId: userId,
                 confirmedAt: new Date(),
               },

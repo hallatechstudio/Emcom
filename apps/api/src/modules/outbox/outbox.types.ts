@@ -7,6 +7,7 @@ export const OutboxType = {
   EMERGENCY_UPDATE: 'emergency.update',
   EMERGENCY_RESOLVED: 'emergency.resolved',
   EMERGENCY_DISMISSED: 'emergency.dismissed',
+  EMERGENCY_REMINDER: 'emergency.reminder',
 } as const;
 export type OutboxType = (typeof OutboxType)[keyof typeof OutboxType];
 
@@ -18,4 +19,5 @@ export interface OutboxPayloads {
   'emergency.update': { emergencyId: string; updateId: string };
   'emergency.resolved': { emergencyId: string };
   'emergency.dismissed': { emergencyId: string };
+  'emergency.reminder': { emergencyId: string; alertId: string; eventId: string };
 }

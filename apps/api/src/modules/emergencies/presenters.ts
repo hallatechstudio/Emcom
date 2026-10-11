@@ -35,6 +35,10 @@ export function toEmergencyDto(e: EmergencyWithRelations, viewer: { userId: stri
     status: e.status,
     category: e.category,
     location: e.location,
+    coordinates:
+      e.latitude != null && e.longitude != null
+        ? { latitude: e.latitude, longitude: e.longitude, accuracyM: e.locationAccuracyM }
+        : null,
     description: e.description,
     instructions: e.instructions,
     reporter: showReporter ? e.reporter : null,

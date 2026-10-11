@@ -182,3 +182,11 @@ Test references: `api:` = `apps/api/test/**`, `web:` = `apps/web/src/**/*.test.*
 | X-6 | Retention configuration | ✅ | `retention.service.ts` + env |
 | X-7 | Reporter can follow own pending/dismissed report; reporter identity hidden from other members | ✅ | `visibilityWhere`, presenters (A-13, A-14) |
 | X-8 | Admin web console | ✅ | `apps/web` |
+| X-9 | Optional GPS fix on reports/critical alerts ("Use my current location"; critical alert attaches an already-permitted fix in the background and never waits for it); "Open GPS location in maps" for admins/members | ✅ | `coordinates` on emergencies (+ DB range checks); api: reminders-location; mob: critical-confirm GPS tests |
+| X-10 | Remind members who haven't acknowledged (admin, rate-limited, audited, timeline `REMINDER_SENT`, `EMERGENCY_REMINDER` push to approved non-acknowledgers only) | ✅ | `remind()`; web + mobile buttons; api: reminders-location |
+| X-11 | In-app alarm (looping siren + vibration, Silence button, 30 s cap) while an unacknowledged ACTIVE alert is on screen in the foreground | ✅ | `apps/mobile/src/lib/alarm.ts`; mob: alarm tests |
+| X-12 | App-wide realtime: one socket joined to all approved communities; foreground pushes and realtime events from any community open the Incoming Alert once | ✅ | `realtime-provider.tsx`, `incoming.ts` |
+| X-13 | Offline cache of communities, active emergencies and opened incidents (24 h, cleared on sign-out) | ✅ | `query-cache.ts`; mob: cache selection test |
+| X-14 | In-app QR scanner on Join; emcom:// join links auto-look-up the code | ✅ | `communities/scan.tsx`, `lib/qr.ts`; mob: QR tests |
+| X-15 | Photos/videos viewable on mobile (short-lived authorized links, fetched on tap) | ✅ | `MediaGallery` |
+| X-16 | Change password and Account screen on mobile; visible confirmed sign-out | ✅ | `app/account.tsx`; mob: sign-out tests |

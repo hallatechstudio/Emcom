@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { newIdempotencyKey } from '@emcom/api-client';
 import { Limits } from '@emcom/shared-types';
+import { MapLinkButton, MediaGallery } from '@/components/emergency';
 import { Body, Button, Card, ErrorView, Field, InlineError, Loading } from '@/components/ui';
 import { useEmergency } from '@/hooks/queries';
 import { api, messageOf } from '@/lib/api';
@@ -43,6 +44,7 @@ export default function AdminEmergency() {
       void done();
     },
   });
+  const remind = useMutation({ mutationFn: () => api.emergencies.remind(communityId, emergencyId), onSuccess: done });
   const resolve = useMutation({ mutationFn: () => api.emergencies.resolve(communityId, emergencyId, resolution.trim()), onSuccess: done });
 
   if (q.isLoading) return <Loading />;
@@ -65,7 +67,8 @@ export default function AdminEmergency() {
           Reported {dateTime(e.reportedAt)}
           {e.reporter ? ` by ${e.reporter.fullName}` : ''}
         </Body>
-        {e.media.length ? <Body muted>{e.media.length} attachment(s) — open in the admin web console to view.</Body> : null}
+        <MapLinkButton e={e} />
+        <MediaGallery e={e} />
         {e.additionalTriggerCount ? <Body style={{ color: colors.emergency, fontWeight: '800' }}>Triggered {e.additionalTriggerCount + 1} times by members</Body> : null}
       </Card>
 
@@ -86,6 +89,17 @@ export default function AdminEmergency() {
             {acks.data.acknowledgedCount} / {acks.data.recipientCount} ACKNOWLEDGED
           </Text>
           <Body muted>Acknowledged ≠ safe. Push acceptance ≠ seen on the device.</Body>
+          {e.status === 'ACTIVE' && acks.data.notAcknowledgedCount > 0 ? (
+            <Button
+              title={`REMIND ${acks.data.notAcknowledgedCount} WHO HAVEN'T ACKNOWLEDGED`}
+              variant="outline"
+              icon="notifications-outline"
+              loading={remind.isPending}
+              onPress={() => remind.mutate()}
+            />
+          ) : null}
+          {remind.data ? <Body style={{ color: colors.safe, fontWeight: '700' }}>Reminder sent to {remind.data.remindedCount} members. You can remind again after {time(remind.data.nextAllowedAt)}.</Body> : null}
+          <InlineError message={remind.error ? messageOf(remind.error) : null} />
           {notAcked.data?.items.length ? (
             <View style={{ gap: 4 }}>
               <Text style={{ fontWeight: '800', color: colors.caution }}>Not acknowledged ({acks.data.notAcknowledgedCount})</Text>

@@ -17,7 +17,7 @@
 `MEMBERSHIP_NOT_ACTIVE`, `MEMBERSHIP_SUSPENDED`, `INSUFFICIENT_ROLE`, `FORBIDDEN`, `ALREADY_MEMBER`,
 `IDENTIFICATION_REQUIRED`, `OWNER_CANNOT_LEAVE`, `OWNER_IMMUTABLE`, `INVALID_STATE_TRANSITION`,
 `ALREADY_CONFIRMED`, `ALREADY_RESOLVED`, `EMERGENCY_NOT_ACTIVE`, `CONCURRENT_UPDATE`,
-`IDEMPOTENCY_KEY_REUSED`, `INVALID_IDEMPOTENCY_KEY`, `UNSUPPORTED_MEDIA_TYPE`, `MEDIA_TOO_LARGE`,
+`IDEMPOTENCY_KEY_REUSED`, `INVALID_IDEMPOTENCY_KEY`, `NOTHING_TO_REMIND`, `UNSUPPORTED_MEDIA_TYPE`, `MEDIA_TOO_LARGE`,
 `RATE_LIMITED`, `INTERNAL_ERROR`.
 
 Community authorization semantics: **no membership → 404** (existence not revealed);
@@ -59,8 +59,8 @@ membership not APPROVED → `403 MEMBERSHIP_NOT_ACTIVE`; role too low → `403 I
 ### Emergencies
 | Method | Path | Role | Notes |
 |---|---|---|---|
-| POST | /communities/:c/emergencies | MEMBER | report; Idempotency-Key |
-| POST | /communities/:c/critical-alerts | MEMBER | `{location?}`; → `{emergency, coalesced, broadcastStatus: QUEUED\|ALREADY_BROADCAST}` |
+| POST | /communities/:c/emergencies | MEMBER | report; Idempotency-Key; optional `coordinates {latitude, longitude, accuracyM?}` |
+| POST | /communities/:c/critical-alerts | MEMBER | `{location?, coordinates?}`; → `{emergency, coalesced, broadcastStatus: QUEUED\|ALREADY_BROADCAST}` |
 | GET | /communities/:c/emergencies?status=A,B&pathway&mine | MEMBER | visibility rules apply |
 | GET | /communities/:c/emergencies/:e | MEMBER | |
 | GET | …/:e/updates · …/:e/timeline | MEMBER | |
@@ -69,6 +69,7 @@ membership not APPROVED → `403 MEMBERSHIP_NOT_ACTIVE`; role too low → `403 I
 | POST | …/:e/dismiss | ADMIN | `{reason?}` |
 | POST | …/:e/updates | ADMIN | `{message}`; Idempotency-Key |
 | POST | …/:e/resolve | ADMIN | `{resolutionMessage}` required |
+| POST | …/:e/remind | ADMIN | re-notify approved recipients who haven't acknowledged; once per 2 min (`429` otherwise); `409 NOTHING_TO_REMIND` / `EMERGENCY_NOT_ACTIVE` |
 | GET | …/:e/acknowledgments | ADMIN | counts + push-state breakdown |
 | GET | …/:e/acknowledgments/recipients?filter&q | ADMIN | paginated |
 

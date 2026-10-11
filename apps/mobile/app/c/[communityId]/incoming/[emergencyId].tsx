@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AcknowledgeButton, WhatsAppButton } from '@/components/emergency';
 import { Button, ErrorView, Loading } from '@/components/ui';
+import { startAlarm, stopAlarm } from '@/lib/alarm';
+import { markPresented } from '@/lib/incoming';
 import { useCommunity, useEmergency } from '@/hooks/queries';
 import { messageOf } from '@/lib/api';
 import { titleOf } from '@/lib/format';
@@ -19,9 +21,18 @@ export default function IncomingAlert() {
   const { communityId, emergencyId } = useLocalSearchParams<{ communityId: string; emergencyId: string }>();
   const { community } = useCommunity(communityId);
   const q = useEmergency(communityId, emergencyId);
+  const [silenced, setSilenced] = useState(false);
   useEffect(() => {
+    markPresented(emergencyId);
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-  }, []);
+    return () => stopAlarm();
+  }, [emergencyId]);
+  // Siren + vibration while an unacknowledged ACTIVE alert is on screen.
+  const shouldRing = q.data?.status === 'ACTIVE' && !q.data.myAcknowledgedAt && !silenced;
+  useEffect(() => {
+    if (shouldRing) void startAlarm();
+    else stopAlarm();
+  }, [shouldRing]);
   const status = q.data?.status;
   useEffect(() => {
     // Already resolved (or not broadcast) by the time it was opened: show the regular incident view.
@@ -57,6 +68,7 @@ export default function IncomingAlert() {
         </View>
         <View style={{ gap: space(3), backgroundColor: '#ffffff', borderRadius: 18, padding: space(4) }}>
           <AcknowledgeButton e={e} />
+          {shouldRing ? <Button title="SILENCE ALARM" variant="outline" icon="volume-mute-outline" onPress={() => setSilenced(true)} /> : null}
           <Button title="VIEW ALERT" onPress={() => router.replace(`/c/${communityId}/emergency/${emergencyId}`)} />
           <WhatsAppButton url={community?.whatsappUrl} />
         </View>

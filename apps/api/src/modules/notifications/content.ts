@@ -51,6 +51,12 @@ export const Content = {
     title: `RESOLVED: ${cat(category)} · ${community}`,
     body: detail(clip(message ?? 'The emergency has been resolved.')),
   }),
+  reminder: (community: string, category: EmergencyCategory | null, pathway: 'NORMAL' | 'CRITICAL'): NotificationContent => ({
+    type: 'EMERGENCY_REMINDER',
+    priority: 'CRITICAL',
+    title: `REMINDER: ${pathway === 'CRITICAL' ? 'CRITICAL ALERT' : `${cat(category).toUpperCase()} EMERGENCY`} · ${community}`,
+    body: 'An emergency is still active in your community. Open EMCOM and acknowledge the alert.',
+  }),
   dismissed: (community: string): NotificationContent => ({
     type: 'REPORT_DISMISSED',
     priority: 'NORMAL',

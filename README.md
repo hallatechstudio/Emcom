@@ -68,7 +68,7 @@ work in Expo Go. Real pushes need an EAS development build — see `apps/mobile/
 
 ```bash
 pnpm db:up
-pnpm --filter @emcom/api test        # 24 unit + 67 integration tests against real Postgres/Redis/S3
+pnpm --filter @emcom/api test        # 24 unit + 71 integration tests against real Postgres/Redis/S3
 pnpm --filter @emcom/web test
 pnpm --filter @emcom/mobile test
 pnpm --filter @emcom/shared-types test && pnpm --filter @emcom/api-client test

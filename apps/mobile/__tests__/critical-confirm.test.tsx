@@ -6,6 +6,8 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ communityId: 'c-1' }),
 }));
 jest.mock('expo-haptics', () => ({ impactAsync: jest.fn(), ImpactFeedbackStyle: { Heavy: 'heavy' } }));
+const mockGps = jest.fn();
+jest.mock('@/lib/location', () => ({ getCurrentCoordinates: (...a: unknown[]) => mockGps(...a) }));
 jest.mock('@/hooks/queries', () => ({ useCommunity: () => ({ community: { name: 'Jacob Mews' } }) }));
 const mockTrigger = jest.fn();
 jest.mock('@/lib/api', () => ({
@@ -16,9 +18,31 @@ jest.mock('@/lib/api', () => ({
 import { router as mockRouter } from 'expo-router';
 import CriticalConfirm from '../app/c/[communityId]/critical-confirm';
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockGps.mockResolvedValue({ ok: false, reason: 'denied' });
+});
 
 describe('Critical Alert confirmation (E2E 5, 6, 9)', () => {
+  it('attaches an already-available GPS fix without prompting', async () => {
+    mockGps.mockResolvedValue({ ok: true, coords: { latitude: 6.5, longitude: 3.3, accuracyM: 9 } });
+    mockTrigger.mockResolvedValue({ emergency: { id: 'e-2' }, coalesced: false, broadcastStatus: 'QUEUED' });
+    render(<CriticalConfirm />);
+    await waitFor(() => expect(screen.getByText(/GPS location will be included/)).toBeTruthy());
+    expect(mockGps).toHaveBeenCalledWith(expect.objectContaining({ prompt: false }));
+    fireEvent.press(screen.getByTestId('confirm-yes'));
+    await waitFor(() => expect(mockTrigger).toHaveBeenCalled());
+    expect(mockTrigger.mock.calls[0][2]).toEqual({ coordinates: { latitude: 6.5, longitude: 3.3, accuracyM: 9 } });
+  });
+
+  it('never waits for GPS before sending', async () => {
+    mockGps.mockReturnValue(new Promise(() => undefined)); // GPS never answers
+    mockTrigger.mockResolvedValue({ emergency: { id: 'e-3' }, coalesced: false, broadcastStatus: 'QUEUED' });
+    render(<CriticalConfirm />);
+    fireEvent.press(screen.getByTestId('confirm-yes'));
+    await waitFor(() => expect(mockTrigger).toHaveBeenCalledWith('c-1', expect.any(String), {}));
+  });
+
   it('names the selected community explicitly', () => {
     render(<CriticalConfirm />);
     expect(screen.getByTestId('confirm-community').props.children).toBe('Jacob Mews');

@@ -1,31 +1,11 @@
-import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { useCallback } from 'react';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { useCommunity } from '@/hooks/queries';
-import { api } from '@/lib/api';
-import { useCommunityRealtime } from '@/lib/realtime';
-import { useSession } from '@/lib/session-store';
 import { colors } from '@/lib/theme';
 
-/**
- * Community scope. Realtime keeps the open community fresh; a newly ACTIVE emergency from someone
- * else opens the Incoming Emergency Alert screen while the app is in the foreground.
- */
+/** Community scope. Realtime for all communities is handled app-wide by RealtimeProvider. */
 export default function CommunityLayout() {
   const { communityId } = useLocalSearchParams<{ communityId: string }>();
   const { community } = useCommunity(communityId);
-  const me = useSession((s) => s.user?.id);
-  const onIncoming = useCallback(
-    async (emergencyId: string) => {
-      try {
-        const e = await api.emergencies.get(communityId, emergencyId);
-        if (e.status === 'ACTIVE' && e.reporter?.id !== me) router.push(`/c/${communityId}/incoming/${emergencyId}`);
-      } catch {
-        // not visible to this user — ignore
-      }
-    },
-    [communityId, me],
-  );
-  useCommunityRealtime(communityId, onIncoming);
 
   return (
     <Stack screenOptions={{ headerTintColor: colors.ink, headerTitleStyle: { fontWeight: '800' }, headerBackTitle: 'Back', contentStyle: { backgroundColor: colors.background } }}>

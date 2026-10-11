@@ -79,6 +79,7 @@ export default function Profile() {
           ) : null}
         </Card>
       ) : null}
+      <Button title="Account & password" variant="outline" icon="key-outline" onPress={() => router.push('/account')} />
       <Button title="My communities" variant="outline" onPress={() => router.navigate('/communities')} />
       <Button testID="sign-out" title="SIGN OUT" variant="outline" icon="log-out-outline" onPress={() => confirmSignOut(qc)} />
       <Body muted style={{ fontSize: 12, textAlign: 'center' }}>

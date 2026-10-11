@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { RefreshControl, ScrollView, Text, View } from 'react-native';
-import { AcknowledgeButton, WhatsAppButton } from '@/components/emergency';
+import { AcknowledgeButton, MapLinkButton, MediaGallery, WhatsAppButton } from '@/components/emergency';
 import { Body, Button, Card, ErrorView, Loading } from '@/components/ui';
 import { useCommunity, useEmergency } from '@/hooks/queries';
 import { messageOf } from '@/lib/api';
@@ -36,6 +36,8 @@ export default function EmergencyScreen() {
         <Row label="Reported" value={dateTime(e.reportedAt)} />
         {e.status === 'RESOLVED' ? <Row label="Resolved" value={dateTime(e.resolvedAt)} /> : null}
         {e.description ? <Body>{e.description}</Body> : null}
+        <MapLinkButton e={e} />
+        <MediaGallery e={e} />
       </Card>
       {e.status === 'RESOLVED' && e.resolutionMessage ? (
         <Card tone="safe">

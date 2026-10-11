@@ -27,6 +27,7 @@ export const AuditAction = {
   EMERGENCY_BROADCAST_QUEUED: 'emergency.broadcast_queued',
   EMERGENCY_UPDATE_SENT: 'emergency.update_sent',
   EMERGENCY_RESOLVED: 'emergency.resolved',
+  EMERGENCY_REMINDER_SENT: 'emergency.reminder_sent',
   CRITICAL_ALERT_TRIGGERED: 'critical_alert.triggered',
   CRITICAL_ALERT_COALESCED: 'critical_alert.coalesced',
   CRITICAL_ALERT_RATE_LIMITED: 'critical_alert.rate_limited',

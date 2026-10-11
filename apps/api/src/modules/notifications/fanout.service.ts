@@ -135,6 +135,26 @@ export class FanoutService {
           },
         ];
       }
+      case OutboxType.EMERGENCY_REMINDER: {
+        const p = event.payload as unknown as OutboxPayloads['emergency.reminder'];
+        const e = await this.loadEmergency(p.emergencyId);
+        if (e.status !== 'ACTIVE') return [];
+        const [recipients, acks] = await Promise.all([
+          this.prisma.alertRecipient.findMany({ where: { alertId: p.alertId, communityId: e.communityId }, select: { userId: true } }),
+          this.prisma.alertAcknowledgment.findMany({ where: { alertId: p.alertId }, select: { userId: true } }),
+        ]);
+        const acked = new Set(acks.map((a) => a.userId));
+        return [
+          {
+            userIds: recipients.map((r) => r.userId).filter((u) => !acked.has(u)),
+            content: Content.reminder(e.community.name, e.category, e.pathway),
+            communityId: e.communityId,
+            emergencyId: e.id,
+            dedupeKey: `reminder:${p.eventId}`,
+            requireApproved: true,
+          },
+        ];
+      }
       case OutboxType.EMERGENCY_DISMISSED: {
         const p = event.payload as unknown as OutboxPayloads['emergency.dismissed'];
         const e = await this.loadEmergency(p.emergencyId);

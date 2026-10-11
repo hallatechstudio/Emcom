@@ -2,7 +2,9 @@ import type { QueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Alert } from 'react-native';
 import { api } from './api';
+import { resetPresented } from './incoming';
 import { unregisterDevice } from './notifications';
+import { clearPersistedCache } from './query-cache';
 import { getStoredRefreshToken, useSession } from './session-store';
 
 /**
@@ -15,6 +17,8 @@ export async function signOut(qc: QueryClient): Promise<void> {
   if (rt) await api.auth.logout(rt).catch(() => undefined);
   await useSession.getState().clear();
   qc.clear();
+  await clearPersistedCache().catch(() => undefined);
+  resetPresented();
   router.dismissAll?.();
   router.replace('/welcome');
 }

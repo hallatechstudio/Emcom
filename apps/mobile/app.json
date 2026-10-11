@@ -7,14 +7,20 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "splash": { "backgroundColor": "#C8102E", "resizeMode": "contain" },
+    "splash": {
+      "backgroundColor": "#C8102E",
+      "resizeMode": "contain"
+    },
     "ios": {
       "bundleIdentifier": "com.emcom.app",
       "supportsTablet": false,
       "infoPlist": {
         "NSCameraUsageDescription": "EMCOM uses the camera so you can attach a photo or video to an emergency report.",
         "NSPhotoLibraryUsageDescription": "EMCOM lets you attach a photo or video to an emergency report.",
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ],
+        "NSLocationWhenInUseUsageDescription": "EMCOM attaches your location to an emergency report only when you choose to, so responders can find you."
       },
       "entitlements": {
         "com.apple.developer.usernotifications.time-sensitive": true
@@ -22,16 +28,30 @@
     },
     "android": {
       "package": "com.emcom.app",
-      "adaptiveIcon": { "backgroundColor": "#C8102E" },
-      "permissions": ["POST_NOTIFICATIONS", "VIBRATE", "CAMERA"],
-      "blockedPermissions": ["android.permission.USE_FULL_SCREEN_INTENT"]
+      "adaptiveIcon": {
+        "backgroundColor": "#C8102E"
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "POST_NOTIFICATIONS",
+        "VIBRATE"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.USE_FULL_SCREEN_INTENT"
+      ]
     },
     "plugins": [
       "expo-router",
       "expo-secure-store",
       [
         "expo-notifications",
-        { "color": "#C8102E", "defaultChannel": "emergency-alerts" }
+        {
+          "color": "#C8102E",
+          "defaultChannel": "emergency-alerts"
+        }
       ],
       [
         "expo-image-picker",
@@ -39,12 +59,35 @@
           "photosPermission": "EMCOM lets you attach a photo or video to an emergency report.",
           "cameraPermission": "EMCOM uses the camera so you can attach a photo or video to an emergency report."
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "EMCOM uses the camera to scan your community's QR code and to attach photos to emergency reports.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "EMCOM attaches your location to an emergency report only when you choose to, so responders can find you."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false
+        }
       ]
     ],
-    "experiments": { "typedRoutes": false },
+    "experiments": {
+      "typedRoutes": false
+    },
     "extra": {
       "apiBaseUrl": "",
-      "eas": { "projectId": "" }
+      "eas": {
+        "projectId": ""
+      }
     }
   }
 }

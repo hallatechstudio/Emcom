@@ -8,15 +8,41 @@ import {
   IsIn,
   IsOptional,
   IsString,
+  IsNumber,
   IsUUID,
   Length,
+  Max,
   MaxLength,
+  Min,
+  ValidateNested,
 } from 'class-validator';
 import { EmergencyCategory, EmergencyPathway, EmergencyStatus } from '@prisma/client';
 import { Limits } from '@emcom/shared-types';
 import { PageQueryDto } from '../../../common/http/pagination';
 
 const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value);
+
+/** Optional GPS fix from the reporter's device (WGS84). */
+export class CoordinatesInputDto {
+  @ApiProperty({ example: 6.5244 })
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(-90)
+  @Max(90)
+  latitude: number;
+
+  @ApiProperty({ example: 3.3792 })
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(-180)
+  @Max(180)
+  longitude: number;
+
+  @ApiPropertyOptional({ example: 12, description: 'Horizontal accuracy in metres' })
+  @IsOptional()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
+  @Min(0)
+  @Max(100_000)
+  accuracyM?: number;
+}
 
 export class ReportEmergencyDto {
   @ApiProperty({ enum: EmergencyCategory })
@@ -41,6 +67,12 @@ export class ReportEmergencyDto {
   @ArrayMaxSize(Limits.maxMediaPerReport)
   @IsUUID('4', { each: true })
   mediaIds?: string[];
+
+  @ApiPropertyOptional({ type: CoordinatesInputDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CoordinatesInputDto)
+  coordinates?: CoordinatesInputDto;
 }
 
 /** PRD §13: no category or attachment is required. Location is an optional hint only. */
@@ -51,6 +83,12 @@ export class TriggerCriticalAlertDto {
   @IsString()
   @MaxLength(160)
   location?: string;
+
+  @ApiPropertyOptional({ type: CoordinatesInputDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CoordinatesInputDto)
+  coordinates?: CoordinatesInputDto;
 }
 
 export class ConfirmEmergencyDto {
