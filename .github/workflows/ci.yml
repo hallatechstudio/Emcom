@@ -38,7 +38,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: 9.15.0 }
       - uses: actions/setup-node@v4
-        with: { node-version: 20.18.0, cache: pnpm }
+        with: { node-version: 20.19.5, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - name: Build shared packages
         run: pnpm --filter @emcom/shared-types build && pnpm --filter @emcom/api-client build

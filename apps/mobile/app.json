@@ -6,11 +6,6 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "splash": {
-      "backgroundColor": "#C8102E",
-      "resizeMode": "contain"
-    },
     "ios": {
       "bundleIdentifier": "com.emcom.app",
       "supportsTablet": false,
@@ -78,7 +73,15 @@
         {
           "microphonePermission": false
         }
-      ]
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#C8102E",
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": false
