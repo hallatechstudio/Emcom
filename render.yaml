@@ -1,0 +1,70 @@
+services:
+  # Free-tier preview only. The combined process preserves the outbox/worker pipeline while the
+  # service is awake, but Render may sleep it after inactivity. Use separate always-on API and
+  # worker services before relying on EMCOM for real emergencies.
+  - type: web
+    name: emcom-api-preview
+    runtime: docker
+    plan: free
+    dockerfilePath: ./infra/docker/api.Dockerfile
+    dockerContext: .
+    dockerCommand: sh -c 'npx prisma migrate deploy && exec node dist/combined.js'
+    healthCheckPath: /health/ready
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: LOG_LEVEL
+        value: info
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: PUBLIC_WEB_URL
+        sync: false
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: MAIL_TRANSPORT
+        value: smtp
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_SECURE
+        value: false
+      - key: MAIL_FROM
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_PUBLIC_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        value: auto
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_FORCE_PATH_STYLE
+        value: true
+      - key: S3_AUTO_CREATE_BUCKET
+        value: false
+      - key: PUSH_PROVIDERS
+        value: EXPO
+      - key: PUSH_FORCE_MOCK
+        value: false
+      - key: EXPO_ACCESS_TOKEN
+        sync: false
+      - key: SWAGGER_ENABLED
+        value: false
+      - key: TRUST_PROXY
+        value: true

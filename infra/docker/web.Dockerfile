@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM node:20.18-bookworm-slim AS build
+FROM node:20.19-bookworm-slim AS build
 RUN npm install -g pnpm@9.15.0
 WORKDIR /repo
 ARG NEXT_PUBLIC_API_URL=http://localhost:4000
@@ -11,7 +11,7 @@ COPY apps/web ./apps/web
 RUN pnpm install --frozen-lockfile --filter @emcom/web... --config.node-linker=isolated
 RUN pnpm --filter @emcom/shared-types build && pnpm --filter @emcom/api-client build && pnpm --filter @emcom/web build
 
-FROM node:20.18-bookworm-slim AS runtime
+FROM node:20.19-bookworm-slim AS runtime
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3001 HOSTNAME=0.0.0.0
 WORKDIR /app
 COPY --from=build --chown=node:node /repo/apps/web/.next/standalone ./

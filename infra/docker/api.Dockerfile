@@ -3,7 +3,7 @@
 #   docker run emcom-api                       -> node dist/main.js
 #   docker run emcom-api node dist/worker.js   -> background worker
 #   docker run emcom-api npx prisma migrate deploy
-FROM node:20.18-bookworm-slim AS build
+FROM node:20.19-bookworm-slim AS build
 RUN npm install -g pnpm@9.15.0 && apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /repo
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json .npmrc turbo.json ./
@@ -16,7 +16,7 @@ RUN pnpm --filter @emcom/api deploy --prod --config.node-linker=isolated /out \
  && cp -r apps/api/dist /out/dist && cp -r apps/api/prisma /out/prisma \
  && cd /out && npx prisma generate
 
-FROM node:20.18-bookworm-slim AS runtime
+FROM node:20.19-bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends openssl tini && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 WORKDIR /app

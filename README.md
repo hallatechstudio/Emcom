@@ -16,7 +16,7 @@ EMCOM is **not** a replacement for police, fire, ambulance or other emergency se
 Docs: [requirements matrix](docs/requirements-matrix.md) · [architecture](docs/architecture.md) ·
 [data model](docs/data-model.md) · [API](docs/api-contract.md) · [security](docs/security-and-authorization.md) ·
 [notifications](docs/notification-strategy.md) · [assumptions](docs/assumptions.md) · [tests](docs/test-plan.md) ·
-[deployment](docs/deployment.md) · [plan/status](docs/implementation-plan.md)
+[deployment](docs/deployment.md) · [free preview deployment](docs/free-deployment.md) · [plan/status](docs/implementation-plan.md)
 
 ## Local setup (one time)
 
