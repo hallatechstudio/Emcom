@@ -89,8 +89,10 @@
     "extra": {
       "apiBaseUrl": "",
       "eas": {
-        "projectId": ""
-      }
-    }
+        "projectId": "101a1147-c1b8-47ba-a135-6b0b44788691"
+      },
+      "router": {}
+    },
+    "owner": "ikiloalerts"
   }
 }
