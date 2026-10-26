@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from 'node:child_process';
+import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { resolve } from 'node:path';
 
 /**
@@ -8,6 +8,17 @@ import { resolve } from 'node:path';
  */
 const children = new Set<ChildProcess>();
 let shuttingDown = false;
+
+function migrate(): void {
+  const prismaCli = resolve(__dirname, '../node_modules/prisma/build/index.js');
+  const schema = resolve(__dirname, '../prisma/schema.prisma');
+  const result = spawnSync(process.execPath, [prismaCli, 'migrate', 'deploy', '--schema', schema], {
+    env: process.env,
+    stdio: 'inherit',
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
+}
 
 function start(entrypoint: 'main.js' | 'worker.js'): ChildProcess {
   const child = spawn(process.execPath, [resolve(__dirname, entrypoint)], {
@@ -46,6 +57,7 @@ function shutdown(signal: NodeJS.Signals, exitCode = 0): Promise<void> {
   });
 }
 
+migrate();
 start('main.js');
 start('worker.js');
 
