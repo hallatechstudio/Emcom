@@ -14,7 +14,8 @@ RUN pnpm install --frozen-lockfile --filter @emcom/api... --config.node-linker=i
 RUN pnpm --filter @emcom/shared-types build && pnpm --filter @emcom/api build
 RUN pnpm --filter @emcom/api deploy --prod --config.node-linker=isolated /out \
  && cp -r apps/api/dist /out/dist && cp -r apps/api/prisma /out/prisma \
- && cd /out && npx prisma generate
+ && cd /out && npx prisma generate \
+ && cd /repo && pnpm --filter @emcom/api exec esbuild prisma/seed.ts --bundle --platform=node --packages=external --outfile=/out/seed.js
 
 FROM node:20.19-bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends openssl tini && rm -rf /var/lib/apt/lists/*

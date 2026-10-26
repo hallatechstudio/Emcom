@@ -20,6 +20,14 @@ function migrate(): void {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
+function seedDemoData(): void {
+  if (!['1', 'true', 'yes'].includes((process.env.SEED_DEMO_DATA ?? '').toLowerCase())) return;
+  const seedScript = resolve(__dirname, '../seed.js');
+  const result = spawnSync(process.execPath, [seedScript], { env: process.env, stdio: 'inherit' });
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
+}
+
 function start(entrypoint: 'main.js' | 'worker.js'): ChildProcess {
   const child = spawn(process.execPath, [resolve(__dirname, entrypoint)], {
     env: process.env,
@@ -58,6 +66,7 @@ function shutdown(signal: NodeJS.Signals, exitCode = 0): Promise<void> {
 }
 
 migrate();
+seedDemoData();
 start('main.js');
 start('worker.js');
 

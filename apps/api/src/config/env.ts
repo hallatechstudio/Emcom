@@ -73,6 +73,8 @@ export const envSchema = z
     METRICS_TOKEN: z.string().optional(),
     SWAGGER_ENABLED: bool.default(true),
     TRUST_PROXY: bool.default(false),
+    /** Preview/demo deployments only: load the idempotent demo dataset during startup. */
+    SEED_DEMO_DATA: bool.default(false),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV === 'production') {

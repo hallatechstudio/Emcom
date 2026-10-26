@@ -67,3 +67,5 @@ services:
         value: false
       - key: TRUST_PROXY
         value: true
+      - key: SEED_DEMO_DATA
+        value: true

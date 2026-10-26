@@ -134,7 +134,7 @@ async function main() {
     });
   }
 
-  console.log('Seed complete. Demo password for all accounts:', PASSWORD);
+  console.log('Seed complete. Demo accounts are ready.');
   console.log('Community codes: Jacob Mews JACOB4821 · Grace Chapel GRACE7K2M · Nova Works NOVAW9P4');
 }
 
