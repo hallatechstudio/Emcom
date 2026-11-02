@@ -78,7 +78,12 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#C8102E",
-          "resizeMode": "contain"
+          "resizeMode": "contain",
+          "android": {
+            "drawable": {
+              "icon": "./assets/android/splash-icon.xml"
+            }
+          }
         }
       ],
       "expo-status-bar"
